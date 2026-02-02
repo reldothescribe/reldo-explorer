@@ -3,26 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>x402 Explorer | Pay-per-query Ethereum Data</title>
-  <meta name="description" content="Real-time Ethereum network data from 160+ globally distributed nodes. $0.01 per query via USDC on Base.">
+  <title>x402 Explorer</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
   <style>
     :root {
-      --bg: #0a0a0a;
-      --surface: #0f0f0f;
-      --surface-2: #141414;
-      --text: #e8e8e8;
-      --dim: #888;
-      --muted: #555;
-      --accent: #00ff88;
-      --accent-dim: #00cc6a;
-      --accent-glow: rgba(0, 255, 136, 0.15);
-      --border: #222;
-      --red: #ff4444;
+      --bg: #09090b;
+      --surface: #18181b;
+      --surface-2: #27272a;
+      --text: #fafafa;
+      --dim: #a1a1aa;
+      --muted: #52525b;
+      --accent: #22c55e;
+      --accent-dim: #16a34a;
+      --border: #27272a;
+      --red: #ef4444;
       --yellow: #eab308;
+      --blue: #3b82f6;
       --purple: #a855f7;
       --cyan: #06b6d4;
       --pink: #ec4899;
@@ -30,26 +29,17 @@
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Space Mono', monospace;
+      font-family: 'Inter', -apple-system, sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      line-height: 1.6;
+      line-height: 1.5;
     }
-    .noise {
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      opacity: 0.03;
-      pointer-events: none;
-      z-index: 0;
-    }
+    .mono { font-family: 'Space Mono', monospace; }
     .container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
-      padding: 40px 24px;
-      position: relative;
-      z-index: 1;
+      padding: 24px;
     }
 
     /* Header */
@@ -57,116 +47,92 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 40px;
-      padding-bottom: 24px;
+      padding: 16px 0 24px;
       border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
     }
-    .brand h1 {
-      font-family: 'Instrument Serif', serif;
-      font-size: 1.75rem;
-      font-weight: 400;
+    .logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
     }
-    .brand h1 span { color: var(--accent); font-style: italic; }
-    .nav-links {
-      display: flex;
-      gap: 20px;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-    }
-    .nav-links a {
-      color: var(--muted);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-    .nav-links a:hover { color: var(--accent); }
+    .logo span { color: var(--accent); }
+    .nav { display: flex; gap: 24px; font-size: 13px; }
+    .nav a { color: var(--dim); text-decoration: none; }
+    .nav a:hover { color: var(--text); }
 
-    /* Query Section - Compact */
-    .query-section {
+    /* Query Bar */
+    .query-bar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 16px;
       background: var(--surface);
       border: 1px solid var(--border);
-      padding: 20px 24px;
+      border-radius: 8px;
       margin-bottom: 24px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
       flex-wrap: wrap;
     }
-    .query-section label {
-      font-size: 10px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-    }
-    .query-section select {
+    .query-bar select, .query-bar input {
       padding: 10px 14px;
       background: var(--bg);
       border: 1px solid var(--border);
+      border-radius: 6px;
       color: var(--text);
-      font-family: 'Space Mono', monospace;
-      font-size: 12px;
+      font-family: inherit;
+      font-size: 13px;
     }
-    .query-section select:focus {
+    .query-bar select:focus, .query-bar input:focus {
       outline: none;
-      border-color: var(--accent-dim);
+      border-color: var(--accent);
     }
-    .price-tag {
-      padding: 10px 16px;
-      background: var(--accent-glow);
-      border: 1px solid var(--accent-dim);
-      color: var(--accent);
-      font-size: 14px;
-      font-weight: 700;
-    }
-    .connect-btn {
-      background: transparent;
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      padding: 10px 18px;
-      font-family: 'Space Mono', monospace;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .connect-btn:hover, .connect-btn.connected {
-      background: var(--accent);
-      color: var(--bg);
-    }
-    .ask-btn {
-      background: var(--accent);
-      border: none;
-      color: var(--bg);
-      padding: 10px 24px;
-      font-family: 'Space Mono', monospace;
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .ask-btn:hover { box-shadow: 0 0 20px var(--accent-glow); }
-    .ask-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
-    .query-input-inline {
-      padding: 10px 14px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-family: 'Space Mono', monospace;
-      font-size: 12px;
+    .query-bar .slot-input {
       width: 140px;
       display: none;
     }
-    .query-input-inline.visible { display: block; }
-    .query-input-inline:focus { outline: none; border-color: var(--accent-dim); }
+    .query-bar .slot-input.visible { display: block; }
+    .price {
+      padding: 10px 16px;
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid var(--accent-dim);
+      border-radius: 6px;
+      color: var(--accent);
+      font-weight: 600;
+      font-family: 'Space Mono', monospace;
+    }
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--dim);
+    }
+    .btn-outline:hover { border-color: var(--dim); color: var(--text); }
+    .btn-outline.connected { border-color: var(--accent); color: var(--accent); }
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+      font-weight: 600;
+    }
+    .btn-primary:hover { background: var(--accent-dim); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
     .network-warning {
       width: 100%;
+      margin-top: 12px;
       padding: 10px 16px;
-      background: rgba(255, 68, 68, 0.1);
-      border: 1px solid rgba(255, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 6px;
       color: var(--red);
-      font-size: 11px;
+      font-size: 13px;
       display: none;
       justify-content: space-between;
       align-items: center;
@@ -174,413 +140,396 @@
     .network-warning.visible { display: flex; }
     .network-warning button {
       background: var(--red);
-      border: none;
       color: white;
-      padding: 4px 12px;
-      font-family: 'Space Mono', monospace;
-      font-size: 10px;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
       cursor: pointer;
     }
 
-    /* Live Stats Bar */
-    .stats-bar {
+    /* Stats */
+    .stats-row {
       display: flex;
-      gap: 32px;
+      gap: 16px;
       margin-bottom: 24px;
-      padding: 16px 0;
-      border-bottom: 1px solid var(--border);
     }
-    .stats-bar .stat {
-      display: flex;
-      align-items: baseline;
-      gap: 8px;
-    }
-    .stats-bar .stat .value {
-      font-size: 20px;
-      font-weight: 700;
-    }
-    .stats-bar .stat .value.accent { color: var(--accent); }
-    .stats-bar .stat .label {
-      font-size: 10px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-    }
-
-    /* Result Display - Full Width */
-    .result-box {
+    .stat-box {
+      flex: 1;
+      padding: 16px 20px;
       background: var(--surface);
       border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .stat-box .label { font-size: 12px; color: var(--dim); margin-bottom: 4px; }
+    .stat-box .value { font-size: 24px; font-weight: 600; font-family: 'Space Mono', monospace; }
+    .stat-box .value.green { color: var(--accent); }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+    .tab {
+      padding: 8px 16px;
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      color: var(--dim);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab:hover { color: var(--text); background: var(--surface); }
+    .tab.active { color: var(--accent); background: rgba(34, 197, 94, 0.1); }
+
+    /* Query Result */
+    .result-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
       margin-bottom: 24px;
       display: none;
     }
-    .result-box.visible { display: block; }
-    .result-box.error { border-color: var(--red); }
-    .result-box.success { border-color: var(--accent); }
+    .result-panel.visible { display: block; }
     .result-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 20px;
+      padding: 12px 16px;
       border-bottom: 1px solid var(--border);
-      background: var(--surface-2);
     }
-    .result-label {
-      font-size: 10px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-    }
-    .result-meta {
+    .result-header .title { font-weight: 500; font-size: 14px; }
+    .result-header .meta { display: flex; gap: 16px; font-size: 12px; color: var(--dim); }
+    .result-header .amount { color: var(--accent); font-family: 'Space Mono', monospace; }
+    .view-toggle {
       display: flex;
-      gap: 16px;
-      font-size: 11px;
+      gap: 4px;
+      background: var(--bg);
+      padding: 4px;
+      border-radius: 6px;
     }
-    .result-meta span { color: var(--dim); }
-    .result-meta .amount { color: var(--accent); font-weight: 700; }
-    .result-toggle {
+    .view-toggle button {
+      padding: 6px 12px;
       background: transparent;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 4px 10px;
-      font-family: 'Space Mono', monospace;
-      font-size: 9px;
+      border: none;
+      border-radius: 4px;
+      color: var(--dim);
+      font-size: 11px;
       cursor: pointer;
-      transition: all 0.2s;
     }
-    .result-toggle:hover { color: var(--accent); border-color: var(--accent-dim); }
-    .result-content { padding: 20px; }
-    .result-raw {
+    .view-toggle button.active { background: var(--surface-2); color: var(--text); }
+    .result-body { padding: 16px; }
+    .result-json {
+      display: none;
+      font-family: 'Space Mono', monospace;
       font-size: 11px;
       line-height: 1.6;
-      white-space: pre-wrap;
-      word-break: break-word;
       color: var(--dim);
-      display: none;
-      max-height: 600px;
-      overflow-y: auto;
-    }
-    .result-raw.visible { display: block; }
-    .response-formatted { display: block; }
-    .response-formatted.hidden { display: none; }
-
-    /* Data Components */
-    .data-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 12px;
-    }
-    .data-grid.wide {
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    }
-    .data-card {
+      white-space: pre-wrap;
+      max-height: 500px;
+      overflow: auto;
       background: var(--bg);
-      border: 1px solid var(--border);
       padding: 16px;
+      border-radius: 6px;
     }
-    .data-card .card-label {
-      font-size: 9px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 6px;
-    }
-    .data-card .card-value {
-      font-size: 20px;
-      font-weight: 700;
-    }
-    .data-card .card-value.accent { color: var(--accent); }
-    .data-card .card-value.warning { color: var(--yellow); }
-    .data-card .card-value.small { font-size: 14px; }
-    .data-card .card-sub {
-      font-size: 10px;
-      color: var(--muted);
-      margin-top: 4px;
-    }
+    .result-json.visible { display: block; }
+    .result-formatted { display: block; }
+    .result-formatted.hidden { display: none; }
 
-    .data-section {
+    /* Charts */
+    .chart-section {
       margin-bottom: 20px;
     }
-    .data-section:last-child { margin-bottom: 0; }
-    .data-section-title {
-      font-size: 10px;
+    .chart-section:last-child { margin-bottom: 0; }
+    .chart-title {
+      font-size: 12px;
+      font-weight: 500;
       color: var(--dim);
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
       margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .bar-chart {
       display: flex;
-      align-items: center;
+      flex-direction: column;
       gap: 8px;
     }
-    .data-section-title::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    .client-bar {
-      display: flex;
-      height: 10px;
-      background: var(--surface);
-      border-radius: 5px;
-      overflow: hidden;
-      margin-bottom: 10px;
-    }
-    .client-bar-segment { height: 100%; }
-    .client-legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      font-size: 10px;
-    }
-    .client-legend-item {
+    .bar-row {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 12px;
     }
-    .client-legend-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 2px;
+    .bar-label {
+      width: 100px;
+      font-size: 12px;
+      color: var(--dim);
+      flex-shrink: 0;
+    }
+    .bar-track {
+      flex: 1;
+      height: 24px;
+      background: var(--bg);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      padding-left: 8px;
+      font-size: 11px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.9);
+      min-width: fit-content;
+    }
+    .bar-value {
+      width: 80px;
+      text-align: right;
+      font-size: 12px;
+      font-family: 'Space Mono', monospace;
+      color: var(--text);
+      flex-shrink: 0;
     }
 
-    .geo-grid {
+    .metric-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+    }
+    .metric-card {
+      padding: 14px;
+      background: var(--bg);
+      border-radius: 6px;
+    }
+    .metric-card .label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    .metric-card .value { font-size: 18px; font-weight: 600; font-family: 'Space Mono', monospace; }
+    .metric-card .value.accent { color: var(--accent); }
+    .metric-card .value.warning { color: var(--yellow); }
+    .metric-card .sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+    .insight-box {
+      padding: 12px 16px;
+      background: rgba(34, 197, 94, 0.1);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 6px 6px 0;
+      font-size: 13px;
+      color: var(--dim);
+      margin-top: 16px;
+    }
+    .insight-box.warning {
+      background: rgba(234, 179, 8, 0.1);
+      border-left-color: var(--yellow);
+    }
+
+    .geo-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
       gap: 8px;
     }
     .geo-item {
       display: flex;
       justify-content: space-between;
-      padding: 8px 12px;
+      align-items: center;
+      padding: 10px 12px;
       background: var(--bg);
-      border: 1px solid var(--border);
-      font-size: 11px;
+      border-radius: 6px;
+      font-size: 12px;
     }
     .geo-item .country { color: var(--dim); }
-    .geo-item .nodes { font-weight: 700; }
-    .geo-item .time { color: var(--muted); font-size: 10px; }
+    .geo-item .data { font-family: 'Space Mono', monospace; }
+    .geo-item .nodes { color: var(--text); font-weight: 500; }
+    .geo-item .latency { color: var(--muted); font-size: 11px; }
 
-    .alert-box {
-      margin-top: 16px;
-      padding: 12px 16px;
-      background: rgba(234, 179, 8, 0.1);
-      border: 1px solid rgba(234, 179, 8, 0.3);
-      color: var(--yellow);
-      font-size: 11px;
-    }
-
-    /* Query History - Full Data View */
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    .section-header h2 {
-      font-family: 'Instrument Serif', serif;
-      font-size: 1.25rem;
-      font-weight: 400;
-    }
-    .section-header h2 em { font-style: italic; color: var(--accent); }
-    .filters {
-      display: flex;
-      gap: 6px;
-    }
-    .filter-btn {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 6px 12px;
-      font-family: 'Space Mono', monospace;
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .filter-btn:hover, .filter-btn.active {
-      border-color: var(--accent-dim);
-      color: var(--accent);
-    }
-
-    /* Query Items - Always Expanded */
+    /* Query List */
     .query-list {
       display: flex;
       flex-direction: column;
       gap: 16px;
     }
-    .query-item {
+    .query-card {
       background: var(--surface);
       border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
     }
-    .query-item-header {
+    .query-card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 12px 16px;
-      border-bottom: 1px solid var(--border);
       background: var(--surface-2);
+      cursor: pointer;
     }
-    .query-item-meta {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .query-item-right {
-      display: flex;
-      align-items: center;
-      gap: 16px;
+    .query-card-header:hover { background: var(--border); }
+    .query-card-meta { display: flex; align-items: center; gap: 12px; }
+    .query-card-right { display: flex; align-items: center; gap: 16px; }
+    .type-pill {
+      padding: 4px 10px;
+      border-radius: 12px;
       font-size: 11px;
-    }
-    .type-badge {
-      display: inline-block;
-      padding: 4px 8px;
-      font-size: 9px;
+      font-weight: 500;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      border: 1px solid;
-      font-weight: 700;
     }
-    .type-badge.gas { border-color: var(--yellow); color: var(--yellow); }
-    .type-badge.block { border-color: var(--purple); color: var(--purple); }
-    .type-badge.network { border-color: var(--accent); color: var(--accent); }
-    .type-badge.validators { border-color: var(--pink); color: var(--pink); }
-    .type-badge.mev { border-color: var(--orange); color: var(--orange); }
-    .type-badge.slot_analysis { border-color: var(--cyan); color: var(--cyan); }
-    .timestamp { color: var(--muted); font-size: 10px; }
-    .address a { color: var(--accent); text-decoration: none; font-size: 11px; }
-    .address a:hover { text-decoration: underline; }
-    .amount { color: var(--accent); font-weight: 700; }
-    
-    .query-item-body {
+    .type-pill.network { background: rgba(34, 197, 94, 0.2); color: var(--accent); }
+    .type-pill.gas { background: rgba(234, 179, 8, 0.2); color: var(--yellow); }
+    .type-pill.block { background: rgba(168, 85, 247, 0.2); color: var(--purple); }
+    .type-pill.validators { background: rgba(236, 72, 153, 0.2); color: var(--pink); }
+    .type-pill.mev { background: rgba(249, 115, 22, 0.2); color: var(--orange); }
+    .type-pill.slot_analysis { background: rgba(6, 182, 212, 0.2); color: var(--cyan); }
+    .timestamp { font-size: 12px; color: var(--muted); }
+    .address-link { font-size: 12px; color: var(--dim); text-decoration: none; font-family: 'Space Mono', monospace; }
+    .address-link:hover { color: var(--accent); }
+    .amount-badge { font-size: 12px; color: var(--accent); font-family: 'Space Mono', monospace; font-weight: 500; }
+    .expand-icon { color: var(--muted); font-size: 12px; }
+    .query-card-body {
+      display: none;
       padding: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .query-card.expanded .query-card-body { display: block; }
+    .query-card.expanded .expand-icon { transform: rotate(180deg); }
+    .json-toggle {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .json-toggle summary {
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+    .json-block {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      background: var(--bg);
+      padding: 12px;
+      border-radius: 6px;
+      overflow: auto;
+      max-height: 300px;
+      color: var(--dim);
     }
 
-    .empty, .loading {
+    .empty {
       text-align: center;
       padding: 48px;
       color: var(--muted);
-      font-size: 12px;
       background: var(--surface);
       border: 1px solid var(--border);
+      border-radius: 8px;
     }
 
-    /* Footer */
     footer {
       margin-top: 48px;
-      padding-top: 24px;
+      padding: 24px 0;
       border-top: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      font-size: 10px;
+      font-size: 12px;
       color: var(--muted);
     }
     footer a { color: var(--dim); text-decoration: none; }
-    footer a:hover { color: var(--accent); }
-    .footer-links { display: flex; gap: 20px; }
+    footer a:hover { color: var(--text); }
+    .footer-links { display: flex; gap: 24px; }
 
     @media (max-width: 768px) {
-      .container { padding: 20px 16px; }
-      header { flex-direction: column; gap: 16px; align-items: flex-start; }
-      .query-section { flex-direction: column; align-items: stretch; }
-      .stats-bar { flex-wrap: wrap; gap: 16px; }
-      .data-grid { grid-template-columns: repeat(2, 1fr); }
-      .geo-grid { grid-template-columns: 1fr 1fr; }
-      .query-item-header { flex-direction: column; gap: 8px; align-items: flex-start; }
-      .query-item-right { width: 100%; justify-content: space-between; }
+      .container { padding: 16px; }
+      .query-bar { flex-direction: column; align-items: stretch; }
+      .stats-row { flex-direction: column; }
+      .metric-grid { grid-template-columns: repeat(2, 1fr); }
+      .geo-list { grid-template-columns: 1fr; }
+      .query-card-header { flex-direction: column; gap: 8px; align-items: flex-start; }
     }
   </style>
 </head>
 <body>
-  <div class="noise"></div>
   <div class="container">
     <header>
-      <div class="brand">
-        <h1>x402 Explorer<span>.</span></h1>
-      </div>
-      <nav class="nav-links">
+      <div class="logo">x402<span>.</span>explorer</div>
+      <nav class="nav">
         <a href="https://reldothescribe.github.io">Research</a>
         <a href="https://x.com/ReldoTheScribe">Twitter</a>
-        <a href="https://github.com/reldothescribe">GitHub</a>
         <a href="https://basescan.org/address/0x62E6D3914c8e211dc27A27080B6eCf283979D60d">Wallet</a>
       </nav>
     </header>
 
-    <div class="query-section">
-      <label>Query</label>
-      <select id="query-type" onchange="toggleQueryInput()">
+    <div class="query-bar">
+      <select id="query-type" onchange="toggleSlotInput()">
         <option value="network">Network Health</option>
         <option value="gas">Gas Analysis</option>
         <option value="block">Latest Block</option>
-        <option value="validators">Validator Stats</option>
+        <option value="validators">Validators</option>
         <option value="mev">MEV / Builders</option>
         <option value="slot_analysis">Slot Analysis</option>
       </select>
-      <input type="text" id="query-input" class="query-input-inline" placeholder="Slot #">
-      <div class="price-tag">$0.01</div>
-      <button class="connect-btn" id="connect-btn">Connect Wallet</button>
-      <button class="ask-btn" id="ask-btn" disabled>Execute Query</button>
+      <input type="text" id="slot-input" class="slot-input" placeholder="Slot number">
+      <div class="price">$0.01</div>
+      <button class="btn btn-outline" id="connect-btn">Connect Wallet</button>
+      <button class="btn btn-primary" id="execute-btn" disabled>Execute</button>
       <div class="network-warning" id="network-warning">
-        <span>Switch to Base network</span>
+        <span>Please switch to Base network</span>
         <button onclick="switchToBase()">Switch</button>
       </div>
     </div>
 
-    <div class="stats-bar">
-      <div class="stat">
-        <span class="value" id="total-queries">-</span>
-        <span class="label">Queries</span>
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="label">Total Queries</div>
+        <div class="value" id="total-queries">-</div>
       </div>
-      <div class="stat">
-        <span class="value" id="queries-24h">-</span>
-        <span class="label">Last 24h</span>
+      <div class="stat-box">
+        <div class="label">Last 24h</div>
+        <div class="value" id="queries-24h">-</div>
       </div>
-      <div class="stat">
-        <span class="value accent" id="total-earned">-</span>
-        <span class="label">Earned</span>
+      <div class="stat-box">
+        <div class="label">Total Earned</div>
+        <div class="value green" id="total-earned">-</div>
       </div>
-      <div class="stat">
-        <span class="value">#22793</span>
-        <span class="label">EIP-8004 Agent</span>
+      <div class="stat-box">
+        <div class="label">Agent ID</div>
+        <div class="value">#22793</div>
       </div>
     </div>
 
-    <div class="result-box" id="result-box">
+    <div class="result-panel" id="result-panel">
       <div class="result-header">
-        <span class="result-label">New Query Result</span>
-        <div class="result-meta">
-          <span id="result-type"></span>
+        <span class="title">Query Result</span>
+        <div class="meta">
+          <span id="result-type">network</span>
           <span class="amount" id="result-cost">$0.01</span>
         </div>
-        <button class="result-toggle" onclick="toggleRawView()">View JSON</button>
+        <div class="view-toggle">
+          <button class="active" onclick="setView('formatted')">Formatted</button>
+          <button onclick="setView('json')">JSON</button>
+        </div>
       </div>
-      <div class="result-content">
-        <div class="response-formatted" id="response-formatted"></div>
-        <pre class="result-raw" id="result-raw"></pre>
+      <div class="result-body">
+        <div class="result-formatted" id="result-formatted"></div>
+        <pre class="result-json" id="result-json"></pre>
       </div>
     </div>
 
-    <div class="section-header">
-      <h2>Query <em>History</em></h2>
-      <div class="filters">
-        <button class="filter-btn active" data-type="">All</button>
-        <button class="filter-btn" data-type="network">Network</button>
-        <button class="filter-btn" data-type="gas">Gas</button>
-        <button class="filter-btn" data-type="block">Block</button>
-        <button class="filter-btn" data-type="validators">Validators</button>
-        <button class="filter-btn" data-type="mev">MEV</button>
-      </div>
+    <div class="tabs">
+      <button class="tab active" data-type="">All Queries</button>
+      <button class="tab" data-type="network">Network</button>
+      <button class="tab" data-type="gas">Gas</button>
+      <button class="tab" data-type="block">Block</button>
+      <button class="tab" data-type="validators">Validators</button>
+      <button class="tab" data-type="mev">MEV</button>
     </div>
 
     <div class="query-list" id="query-list">
-      <div class="loading">Loading paid query data...</div>
+      <div class="empty">Loading...</div>
     </div>
 
     <footer>
-      <span>Base mainnet · USDC · EIP-3009</span>
+      <span>Base Mainnet · USDC · EIP-3009</span>
       <div class="footer-links">
         <a href="https://reldo-x402-api.reldo.workers.dev/">API</a>
         <a href="https://reldo-x402-api.reldo.workers.dev/.well-known/agent-card.json">Agent Card</a>
@@ -590,506 +539,336 @@
   </div>
 
   <script>
-    const API_BASE = 'https://reldo-x402-api.reldo.workers.dev';
-    const RELDO_ADDRESS = '0x62E6D3914c8e211dc27A27080B6eCf283979D60d';
-    const USDC_BASE = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
-    const BASE_CHAIN_ID = 8453;
-    const PAYMENT_AMOUNT = '10000';
+    const API = 'https://reldo-x402-api.reldo.workers.dev';
+    const RELDO = '0x62E6D3914c8e211dc27A27080B6eCf283979D60d';
+    const USDC = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+    const BASE_ID = 8453;
 
-    const CLIENT_COLORS = {
-      prysm: '#00d4aa',
-      lighthouse: '#9b59b6',
-      teku: '#3498db',
-      nimbus: '#f39c12',
-      lodestar: '#e74c3c',
-      grandine: '#1abc9c',
-      tysm: '#34495e',
-      caplin: '#95a5a6'
+    const COLORS = {
+      prysm: '#22c55e', lighthouse: '#a855f7', teku: '#3b82f6',
+      nimbus: '#f59e0b', lodestar: '#ef4444', grandine: '#14b8a6',
+      tysm: '#6366f1', caplin: '#8b5cf6'
     };
 
-    let provider = null;
-    let signer = null;
-    let userAddress = null;
-    let currentType = '';
-    let showRaw = false;
+    let provider, signer, userAddress, currentFilter = '', viewMode = 'formatted';
 
-    // Response formatters - show ALL data
+    // Formatters with charts
     const formatters = {
-      network: (data) => {
-        const prop = data.propagation || {};
-        const clients = data.clients || [];
-        const geo = data.geography || [];
-        const totalNodes = clients.reduce((sum, c) => sum + (c.nodes || 0), 0);
-        
+      network: (d) => {
+        const p = d.propagation || {};
+        const clients = d.clients || [];
+        const geo = d.geography || [];
+        const total = clients.reduce((s, c) => s + (c.nodes || 0), 0);
+        const maxNodes = Math.max(...clients.map(c => c.nodes || 0));
+
         return `
-          <div class="data-section">
-            <div class="data-section-title">Block Propagation (${data.period || '1h'} · ${data.network || 'mainnet'})</div>
-            <div class="data-grid">
-              <div class="data-card">
-                <div class="card-label">Slots Observed</div>
-                <div class="card-value">${prop.slotsObserved || '-'}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">Average</div>
-                <div class="card-value accent">${formatMs(prop.average_ms)}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">P50 (Median)</div>
-                <div class="card-value">${formatMs(prop.p50_ms)}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">P95</div>
-                <div class="card-value">${formatMs(prop.p95_ms)}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">P99</div>
-                <div class="card-value">${formatMs(prop.p99_ms)}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">Fastest</div>
-                <div class="card-value">${formatMs(prop.fastest_ms)}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">Slowest</div>
-                <div class="card-value warning">${formatMs(prop.slowest_ms)}</div>
-              </div>
+          <div class="chart-section">
+            <div class="chart-title">Block Propagation Timing</div>
+            <div class="metric-grid">
+              <div class="metric-card"><div class="label">Slots</div><div class="value">${p.slotsObserved || '-'}</div></div>
+              <div class="metric-card"><div class="label">Average</div><div class="value accent">${fmtMs(p.average_ms)}</div></div>
+              <div class="metric-card"><div class="label">Median (P50)</div><div class="value">${fmtMs(p.p50_ms)}</div></div>
+              <div class="metric-card"><div class="label">P95</div><div class="value">${fmtMs(p.p95_ms)}</div></div>
+              <div class="metric-card"><div class="label">P99</div><div class="value">${fmtMs(p.p99_ms)}</div></div>
+              <div class="metric-card"><div class="label">Fastest</div><div class="value">${fmtMs(p.fastest_ms)}</div></div>
+              <div class="metric-card"><div class="label">Slowest</div><div class="value warning">${fmtMs(p.slowest_ms)}</div></div>
             </div>
           </div>
           ${clients.length ? `
-          <div class="data-section">
-            <div class="data-section-title">Client Distribution (${totalNodes} nodes)</div>
-            <div class="client-bar">
-              ${clients.map(c => {
-                const pct = ((c.nodes || 0) / totalNodes * 100);
-                const color = CLIENT_COLORS[c.name?.toLowerCase()] || '#666';
-                return `<div class="client-bar-segment" style="width: ${pct}%; background: ${color}"></div>`;
-              }).join('')}
-            </div>
-            <div class="data-grid">
-              ${clients.map(c => {
-                const color = CLIENT_COLORS[c.name?.toLowerCase()] || '#666';
-                const pct = ((c.nodes || 0) / totalNodes * 100).toFixed(1);
-                return `<div class="data-card">
-                  <div class="card-label" style="color: ${color}">${c.name}</div>
-                  <div class="card-value">${c.nodes}</div>
-                  <div class="card-sub">${pct}% · ${formatMs(c.avg_ms)} avg · ${formatMs(c.p50_ms)} p50</div>
+          <div class="chart-section">
+            <div class="chart-title">Client Distribution (${total} nodes)</div>
+            <div class="bar-chart">
+              ${clients.sort((a,b) => (b.nodes||0) - (a.nodes||0)).map(c => {
+                const pct = (c.nodes || 0) / total * 100;
+                const color = COLORS[c.name?.toLowerCase()] || '#666';
+                return `<div class="bar-row">
+                  <div class="bar-label">${c.name}</div>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: ${pct}%; background: ${color}">${pct.toFixed(1)}%</div>
+                  </div>
+                  <div class="bar-value">${c.nodes} · ${fmtMs(c.avg_ms)}</div>
                 </div>`;
               }).join('')}
             </div>
           </div>` : ''}
+          ${d.clientInsight ? `<div class="insight-box">${d.clientInsight}</div>` : ''}
           ${geo.length ? `
-          <div class="data-section">
-            <div class="data-section-title">Geographic Distribution (${geo.length} countries)</div>
-            <div class="geo-grid">
-              ${geo.map(g => `
-                <div class="geo-item">
-                  <span class="country">${g.country}</span>
-                  <span class="nodes">${g.nodes}</span>
-                  <span class="time">${formatMs(g.avg_ms)}</span>
-                </div>
-              `).join('')}
+          <div class="chart-section">
+            <div class="chart-title">Geographic Distribution (${geo.length} countries)</div>
+            <div class="geo-list">
+              ${geo.map(g => `<div class="geo-item">
+                <span class="country">${g.country}</span>
+                <span class="data"><span class="nodes">${g.nodes}</span> <span class="latency">${fmtMs(g.avg_ms)}</span></span>
+              </div>`).join('')}
             </div>
           </div>` : ''}
-          ${data.lateBlocks ? `
-          <div class="data-section">
-            <div class="data-section-title">Late Blocks Analysis</div>
-            <div class="data-grid">
-              <div class="data-card">
-                <div class="card-label">Late Blocks</div>
-                <div class="card-value warning">${data.lateBlocks.count}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">Percentage</div>
-                <div class="card-value warning">${data.lateBlocks.percentage?.toFixed(1)}%</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">Avg Late Time</div>
-                <div class="card-value">${formatMs(data.lateBlocks.avg_ms)}</div>
-              </div>
+          ${d.lateBlocks ? `
+          <div class="chart-section">
+            <div class="chart-title">Late Blocks (&gt;4s after slot start)</div>
+            <div class="metric-grid">
+              <div class="metric-card"><div class="label">Count</div><div class="value warning">${d.lateBlocks.count}</div></div>
+              <div class="metric-card"><div class="label">Percentage</div><div class="value warning">${d.lateBlocks.percentage?.toFixed(1)}%</div></div>
+              <div class="metric-card"><div class="label">Avg Delay</div><div class="value">${fmtMs(d.lateBlocks.avg_ms)}</div></div>
             </div>
           </div>` : ''}
-          ${data.clientInsight ? `<div class="alert-box">${data.clientInsight}</div>` : ''}
-          ${data.alert ? `<div class="alert-box">${data.alert}</div>` : ''}
+          ${d.alert ? `<div class="insight-box warning">${d.alert}</div>` : ''}
         `;
       },
-      
-      gas: (data) => {
-        return `
-          <div class="data-section">
-            <div class="data-section-title">Gas Analysis</div>
-            <div class="data-grid">
-              <div class="data-card">
-                <div class="card-label">Base Fee (Avg)</div>
-                <div class="card-value accent">${data.baseFee?.avg ? (data.baseFee.avg / 1e9).toFixed(2) + ' gwei' : '-'}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">Base Fee (P50)</div>
-                <div class="card-value">${data.baseFee?.p50 ? (data.baseFee.p50 / 1e9).toFixed(2) + ' gwei' : '-'}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">Base Fee (P95)</div>
-                <div class="card-value">${data.baseFee?.p95 ? (data.baseFee.p95 / 1e9).toFixed(2) + ' gwei' : '-'}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">Utilization</div>
-                <div class="card-value">${data.utilization ? (data.utilization * 100).toFixed(1) + '%' : '-'}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">Blocks Analyzed</div>
-                <div class="card-value">${data.blocksAnalyzed || '-'}</div>
-              </div>
-            </div>
+
+      gas: (d) => `
+        <div class="chart-section">
+          <div class="chart-title">Gas Analysis</div>
+          <div class="metric-grid">
+            <div class="metric-card"><div class="label">Avg Base Fee</div><div class="value accent">${d.baseFee?.avg ? (d.baseFee.avg/1e9).toFixed(2)+' gwei' : '-'}</div></div>
+            <div class="metric-card"><div class="label">Median</div><div class="value">${d.baseFee?.p50 ? (d.baseFee.p50/1e9).toFixed(2)+' gwei' : '-'}</div></div>
+            <div class="metric-card"><div class="label">P95</div><div class="value">${d.baseFee?.p95 ? (d.baseFee.p95/1e9).toFixed(2)+' gwei' : '-'}</div></div>
+            <div class="metric-card"><div class="label">Utilization</div><div class="value">${d.utilization ? (d.utilization*100).toFixed(1)+'%' : '-'}</div></div>
+            <div class="metric-card"><div class="label">Blocks</div><div class="value">${d.blocksAnalyzed || '-'}</div></div>
           </div>
-        `;
-      },
-      
-      block: (data) => {
-        return `
-          <div class="data-section">
-            <div class="data-section-title">Latest Block</div>
-            <div class="data-grid">
-              <div class="data-card">
-                <div class="card-label">Slot</div>
-                <div class="card-value accent">${data.slot?.toLocaleString() || '-'}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">Block Number</div>
-                <div class="card-value">${data.blockNumber?.toLocaleString() || '-'}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">Proposer Index</div>
-                <div class="card-value">${data.proposerIndex?.toLocaleString() || '-'}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">Propagation</div>
-                <div class="card-value">${formatMs(data.propagation_ms)}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">Block Root</div>
-                <div class="card-value small">${data.blockRoot ? data.blockRoot.slice(0, 10) + '...' : '-'}</div>
-              </div>
-            </div>
+        </div>
+      `,
+
+      block: (d) => `
+        <div class="chart-section">
+          <div class="chart-title">Latest Block</div>
+          <div class="metric-grid">
+            <div class="metric-card"><div class="label">Slot</div><div class="value accent">${d.slot?.toLocaleString() || '-'}</div></div>
+            <div class="metric-card"><div class="label">Block #</div><div class="value">${d.blockNumber?.toLocaleString() || '-'}</div></div>
+            <div class="metric-card"><div class="label">Proposer</div><div class="value">${d.proposerIndex?.toLocaleString() || '-'}</div></div>
+            <div class="metric-card"><div class="label">Propagation</div><div class="value">${fmtMs(d.propagation_ms)}</div></div>
           </div>
-        `;
-      },
-      
-      validators: (data) => {
-        return `
-          <div class="data-section">
-            <div class="data-section-title">Attestation Performance</div>
-            <div class="data-grid">
-              <div class="data-card">
-                <div class="card-label">Attestations Analyzed</div>
-                <div class="card-value">${data.attestationsAnalyzed?.toLocaleString() || '-'}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">Head Vote Accuracy</div>
-                <div class="card-value accent">${data.headVoteAccuracy ? (data.headVoteAccuracy * 100).toFixed(2) + '%' : '-'}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">Target Vote Accuracy</div>
-                <div class="card-value">${data.targetVoteAccuracy ? (data.targetVoteAccuracy * 100).toFixed(2) + '%' : '-'}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">Source Vote Accuracy</div>
-                <div class="card-value">${data.sourceVoteAccuracy ? (data.sourceVoteAccuracy * 100).toFixed(2) + '%' : '-'}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">Avg Inclusion Distance</div>
-                <div class="card-value">${data.avgInclusionDistance?.toFixed(2) || '-'} slots</div>
-              </div>
-            </div>
+        </div>
+      `,
+
+      validators: (d) => `
+        <div class="chart-section">
+          <div class="chart-title">Attestation Performance</div>
+          <div class="metric-grid">
+            <div class="metric-card"><div class="label">Analyzed</div><div class="value">${d.attestationsAnalyzed?.toLocaleString() || '-'}</div></div>
+            <div class="metric-card"><div class="label">Head Accuracy</div><div class="value accent">${d.headVoteAccuracy ? (d.headVoteAccuracy*100).toFixed(2)+'%' : '-'}</div></div>
+            <div class="metric-card"><div class="label">Target Accuracy</div><div class="value">${d.targetVoteAccuracy ? (d.targetVoteAccuracy*100).toFixed(2)+'%' : '-'}</div></div>
+            <div class="metric-card"><div class="label">Inclusion Dist</div><div class="value">${d.avgInclusionDistance?.toFixed(2) || '-'} slots</div></div>
           </div>
-        `;
-      },
-      
-      mev: (data) => {
-        const builders = data.builders || [];
-        const total = builders.reduce((sum, b) => sum + (b.blocks || b.count || 0), 0);
+        </div>
+      `,
+
+      mev: (d) => {
+        const builders = d.builders || [];
+        const total = builders.reduce((s, b) => s + (b.blocks || b.count || 0), 0);
         return `
-          <div class="data-section">
-            <div class="data-section-title">Builder Distribution${data.period ? ` (${data.period})` : ''}</div>
-            ${builders.length ? `
-            <div class="data-grid wide">
-              ${builders.map(b => {
+          <div class="chart-section">
+            <div class="chart-title">Builder Distribution</div>
+            ${builders.length ? `<div class="bar-chart">
+              ${builders.sort((a,b) => (b.blocks||b.count||0) - (a.blocks||a.count||0)).map((b, i) => {
                 const blocks = b.blocks || b.count || 0;
-                const pct = total > 0 ? (blocks / total * 100).toFixed(1) : 0;
-                return `<div class="data-card">
-                  <div class="card-label">${b.name || b.builder || 'Unknown'}</div>
-                  <div class="card-value">${blocks.toLocaleString()}</div>
-                  <div class="card-sub">${pct}% share</div>
+                const pct = total > 0 ? blocks/total*100 : 0;
+                const colors = ['#22c55e', '#3b82f6', '#a855f7', '#f59e0b', '#ef4444', '#14b8a6'];
+                return `<div class="bar-row">
+                  <div class="bar-label">${b.name || b.builder || 'Unknown'}</div>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: ${pct}%; background: ${colors[i % colors.length]}">${pct.toFixed(1)}%</div>
+                  </div>
+                  <div class="bar-value">${blocks.toLocaleString()}</div>
                 </div>`;
               }).join('')}
-            </div>
-            ` : '<div style="color: var(--muted); font-size: 12px; padding: 20px;">No builder data available</div>'}
+            </div>` : '<div style="color: var(--muted)">No data</div>'}
           </div>
         `;
       },
-      
-      slot_analysis: (data) => {
-        return `
-          <div class="data-section">
-            <div class="data-section-title">Slot ${data.slot?.toLocaleString() || '-'} Analysis</div>
-            <div class="data-grid">
-              <div class="data-card">
-                <div class="card-label">Slot</div>
-                <div class="card-value accent">${data.slot?.toLocaleString() || '-'}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">Block Arrivals</div>
-                <div class="card-value">${data.blockArrivals?.toLocaleString() || '-'}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">Attestations</div>
-                <div class="card-value">${data.attestations?.toLocaleString() || '-'}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">Blob Sidecars</div>
-                <div class="card-value">${data.blobSidecars?.toLocaleString() || '-'}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">First Seen</div>
-                <div class="card-value">${formatMs(data.firstSeen_ms)}</div>
-              </div>
-              <div class="data-card">
-                <div class="card-label">Last Seen</div>
-                <div class="card-value">${formatMs(data.lastSeen_ms)}</div>
-              </div>
-            </div>
+
+      slot_analysis: (d) => `
+        <div class="chart-section">
+          <div class="chart-title">Slot ${d.slot?.toLocaleString() || '-'}</div>
+          <div class="metric-grid">
+            <div class="metric-card"><div class="label">Slot</div><div class="value accent">${d.slot?.toLocaleString() || '-'}</div></div>
+            <div class="metric-card"><div class="label">Block Arrivals</div><div class="value">${d.blockArrivals || '-'}</div></div>
+            <div class="metric-card"><div class="label">Attestations</div><div class="value">${d.attestations?.toLocaleString() || '-'}</div></div>
+            <div class="metric-card"><div class="label">Blobs</div><div class="value">${d.blobSidecars || '-'}</div></div>
+            <div class="metric-card"><div class="label">First Seen</div><div class="value">${fmtMs(d.firstSeen_ms)}</div></div>
           </div>
-        `;
-      }
+        </div>
+      `
     };
 
-    function formatMs(ms) {
-      if (ms === undefined || ms === null) return '-';
+    function fmtMs(ms) {
+      if (ms == null) return '-';
       if (ms < 1000) return Math.round(ms) + 'ms';
-      if (ms < 60000) return (ms / 1000).toFixed(2) + 's';
-      return (ms / 60000).toFixed(1) + 'm';
+      if (ms < 60000) return (ms/1000).toFixed(2) + 's';
+      return (ms/60000).toFixed(1) + 'm';
     }
 
-    function formatResponse(type, data) {
-      if (data.error) {
-        return `<div style="color: var(--red); font-size: 12px; padding: 16px; background: rgba(255, 68, 68, 0.1); border: 1px solid rgba(255, 68, 68, 0.3);">Error: ${data.error}</div>`;
-      }
-      const formatter = formatters[type];
-      if (formatter) {
-        try { return formatter(data); } catch (e) { console.error('Format error:', e); }
-      }
-      return `<pre style="font-size: 11px; color: var(--dim); white-space: pre-wrap;">${JSON.stringify(data, null, 2)}</pre>`;
+    function fmt(type, data) {
+      if (data.error) return `<div class="insight-box warning">Error: ${data.error}</div>`;
+      return formatters[type]?.(data) || `<pre style="font-size:11px;color:var(--dim)">${JSON.stringify(data,null,2)}</pre>`;
     }
 
-    function toggleRawView() {
-      showRaw = !showRaw;
-      document.getElementById('response-formatted').classList.toggle('hidden', showRaw);
-      document.getElementById('result-raw').classList.toggle('visible', showRaw);
-      document.querySelector('.result-toggle').textContent = showRaw ? 'View Formatted' : 'View JSON';
+    function setView(mode) {
+      viewMode = mode;
+      document.querySelectorAll('.view-toggle button').forEach(b => b.classList.toggle('active', b.textContent.toLowerCase() === mode));
+      document.getElementById('result-formatted').classList.toggle('hidden', mode === 'json');
+      document.getElementById('result-json').classList.toggle('visible', mode === 'json');
     }
 
-    async function connectWallet() {
-      if (!window.ethereum) { alert('Please install a Web3 wallet'); return; }
-      try {
-        provider = new ethers.BrowserProvider(window.ethereum);
-        const accounts = await provider.send('eth_requestAccounts', []);
-        userAddress = accounts[0];
-        signer = await provider.getSigner();
-        const network = await provider.getNetwork();
-        updateWalletUI(network.chainId);
-        window.ethereum.on('chainChanged', () => window.location.reload());
-        window.ethereum.on('accountsChanged', () => window.location.reload());
-      } catch (e) { console.error('Connection failed:', e); }
+    function toggleSlotInput() {
+      const t = document.getElementById('query-type').value;
+      document.getElementById('slot-input').classList.toggle('visible', t === 'slot_analysis');
     }
 
-    function updateWalletUI(chainId) {
-      const connectBtn = document.getElementById('connect-btn');
-      const askBtn = document.getElementById('ask-btn');
-      const networkWarning = document.getElementById('network-warning');
-      connectBtn.textContent = userAddress.slice(0, 6) + '...' + userAddress.slice(-4);
-      connectBtn.classList.add('connected');
-      if (BigInt(chainId) !== BigInt(BASE_CHAIN_ID)) {
-        networkWarning.classList.add('visible');
-        askBtn.disabled = true;
+    async function connect() {
+      if (!window.ethereum) return alert('Install a Web3 wallet');
+      provider = new ethers.BrowserProvider(window.ethereum);
+      const accounts = await provider.send('eth_requestAccounts', []);
+      userAddress = accounts[0];
+      signer = await provider.getSigner();
+      const net = await provider.getNetwork();
+      const btn = document.getElementById('connect-btn');
+      btn.textContent = userAddress.slice(0,6) + '...' + userAddress.slice(-4);
+      btn.classList.add('connected');
+      if (BigInt(net.chainId) !== BigInt(BASE_ID)) {
+        document.getElementById('network-warning').classList.add('visible');
+        document.getElementById('execute-btn').disabled = true;
       } else {
-        networkWarning.classList.remove('visible');
-        askBtn.disabled = false;
+        document.getElementById('network-warning').classList.remove('visible');
+        document.getElementById('execute-btn').disabled = false;
       }
+      window.ethereum.on('chainChanged', () => location.reload());
     }
 
     async function switchToBase() {
       try {
-        await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x2105' }] });
-      } catch (e) {
-        if (e.code === 4902) {
-          await window.ethereum.request({
-            method: 'wallet_addEthereumChain',
-            params: [{ chainId: '0x2105', chainName: 'Base', nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: ['https://mainnet.base.org'], blockExplorerUrls: ['https://basescan.org'] }]
-          });
-        }
+        await window.ethereum.request({method: 'wallet_switchEthereumChain', params: [{chainId: '0x2105'}]});
+      } catch(e) {
+        if (e.code === 4902) await window.ethereum.request({method: 'wallet_addEthereumChain', params: [{chainId: '0x2105', chainName: 'Base', nativeCurrency: {name: 'ETH', symbol: 'ETH', decimals: 18}, rpcUrls: ['https://mainnet.base.org'], blockExplorerUrls: ['https://basescan.org']}]});
       }
     }
 
-    async function signPaymentAuthorization() {
-      const validAfter = 0;
-      const validBefore = Math.floor(Date.now() / 1000) + 3600;
-      const nonce = ethers.hexlify(ethers.randomBytes(32));
-      const domain = { name: 'USD Coin', version: '2', chainId: BASE_CHAIN_ID, verifyingContract: USDC_BASE };
-      const types = { TransferWithAuthorization: [
-        { name: 'from', type: 'address' }, { name: 'to', type: 'address' }, { name: 'value', type: 'uint256' },
-        { name: 'validAfter', type: 'uint256' }, { name: 'validBefore', type: 'uint256' }, { name: 'nonce', type: 'bytes32' }
-      ]};
-      const value = { from: userAddress, to: RELDO_ADDRESS, value: PAYMENT_AMOUNT, validAfter, validBefore, nonce };
-      const signature = await signer.signTypedData(domain, types, value);
-      return { signature, authorization: { from: userAddress, to: RELDO_ADDRESS, value: PAYMENT_AMOUNT, validAfter: String(validAfter), validBefore: String(validBefore), nonce } };
-    }
+    async function execute() {
+      const btn = document.getElementById('execute-btn');
+      const panel = document.getElementById('result-panel');
+      const fmtDiv = document.getElementById('result-formatted');
+      const jsonDiv = document.getElementById('result-json');
+      const type = document.getElementById('query-type').value;
 
-    async function askReldo() {
-      const askBtn = document.getElementById('ask-btn');
-      const resultBox = document.getElementById('result-box');
-      const formatted = document.getElementById('response-formatted');
-      const raw = document.getElementById('result-raw');
-      const queryType = document.getElementById('query-type').value;
-
-      askBtn.disabled = true;
-      askBtn.textContent = 'Signing...';
-      resultBox.className = 'result-box visible';
-      formatted.innerHTML = '<div style="color: var(--muted); padding: 20px; text-align: center;">Waiting for wallet signature...</div>';
+      btn.disabled = true;
+      btn.textContent = 'Signing...';
+      panel.className = 'result-panel visible';
+      fmtDiv.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center">Waiting for signature...</div>';
 
       try {
-        const { signature, authorization } = await signPaymentAuthorization();
-        askBtn.textContent = 'Querying...';
-        formatted.innerHTML = '<div style="color: var(--muted); padding: 20px; text-align: center;">Fetching data from Xatu nodes...</div>';
+        const validBefore = Math.floor(Date.now()/1000) + 3600;
+        const nonce = ethers.hexlify(ethers.randomBytes(32));
+        const sig = await signer.signTypedData(
+          {name: 'USD Coin', version: '2', chainId: BASE_ID, verifyingContract: USDC},
+          {TransferWithAuthorization: [{name:'from',type:'address'},{name:'to',type:'address'},{name:'value',type:'uint256'},{name:'validAfter',type:'uint256'},{name:'validBefore',type:'uint256'},{name:'nonce',type:'bytes32'}]},
+          {from: userAddress, to: RELDO, value: '10000', validAfter: 0, validBefore, nonce}
+        );
 
-        const paymentPayload = { x402Version: 1, scheme: 'exact', network: 'base-mainnet', payload: { signature, authorization } };
-        const requestBody = { type: queryType };
-        const queryInput = document.getElementById('query-input').value;
-        if (queryTypeInfo[queryType].needsInput && queryInput) requestBody.query = queryInput;
+        btn.textContent = 'Querying...';
+        fmtDiv.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center">Fetching from Xatu nodes...</div>';
 
-        const response = await fetch(`${API_BASE}/v1/query`, {
+        const body = {type};
+        const slot = document.getElementById('slot-input').value;
+        if (type === 'slot_analysis' && slot) body.query = slot;
+
+        const res = await fetch(`${API}/v1/query`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Payment': btoa(JSON.stringify(paymentPayload)) },
-          body: JSON.stringify(requestBody)
+          headers: {'Content-Type': 'application/json', 'X-Payment': btoa(JSON.stringify({x402Version:1, scheme:'exact', network:'base-mainnet', payload:{signature:sig, authorization:{from:userAddress, to:RELDO, value:'10000', validAfter:'0', validBefore:String(validBefore), nonce}}}))},
+          body: JSON.stringify(body)
         });
-        const data = await response.json();
-        document.getElementById('result-type').textContent = queryType;
+        const data = await res.json();
+        document.getElementById('result-type').textContent = type;
 
         if (data.success) {
-          resultBox.classList.add('success');
-          formatted.innerHTML = formatResponse(queryType, data.result);
-          raw.textContent = JSON.stringify(data.result, null, 2);
+          fmtDiv.innerHTML = fmt(type, data.result);
+          jsonDiv.textContent = JSON.stringify(data.result, null, 2);
           loadStats();
-          loadQueries(currentType);
+          loadQueries(currentFilter);
         } else {
-          resultBox.classList.add('error');
-          formatted.innerHTML = formatResponse(queryType, { error: data.error || 'Query failed' });
-          raw.textContent = JSON.stringify(data, null, 2);
+          fmtDiv.innerHTML = `<div class="insight-box warning">${data.error || 'Query failed'}</div>`;
+          jsonDiv.textContent = JSON.stringify(data, null, 2);
         }
-      } catch (e) {
-        resultBox.classList.add('error');
-        formatted.innerHTML = `<div style="color: var(--red); padding: 16px;">Error: ${e.message || e}</div>`;
-      } finally {
-        askBtn.disabled = false;
-        askBtn.textContent = 'Execute Query';
+      } catch(e) {
+        fmtDiv.innerHTML = `<div class="insight-box warning">Error: ${e.message}</div>`;
       }
+      btn.disabled = false;
+      btn.textContent = 'Execute';
     }
 
-    const queryTypeInfo = {
-      network: { needsInput: false },
-      gas: { needsInput: false },
-      block: { needsInput: false },
-      validators: { needsInput: false },
-      mev: { needsInput: false },
-      slot_analysis: { needsInput: true }
-    };
-
-    function toggleQueryInput() {
-      const queryType = document.getElementById('query-type').value;
-      document.getElementById('query-input').classList.toggle('visible', queryTypeInfo[queryType].needsInput);
-    }
-
-    document.getElementById('connect-btn').addEventListener('click', connectWallet);
-    document.getElementById('ask-btn').addEventListener('click', askReldo);
-
-    function formatTime(isoString) {
-      const diff = Date.now() - new Date(isoString).getTime();
-      if (diff < 60000) return 'just now';
-      if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
-      if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
-      return new Date(isoString).toLocaleDateString();
-    }
-
-    function truncateAddress(addr) {
-      return addr ? addr.slice(0, 6) + '...' + addr.slice(-4) : '-';
+    function fmtTime(iso) {
+      const d = Date.now() - new Date(iso).getTime();
+      if (d < 60000) return 'just now';
+      if (d < 3600000) return Math.floor(d/60000) + 'm ago';
+      if (d < 86400000) return Math.floor(d/3600000) + 'h ago';
+      return new Date(iso).toLocaleDateString();
     }
 
     async function loadStats() {
       try {
-        const res = await fetch(`${API_BASE}/v1/stats`);
-        const data = await res.json();
-        if (data.success) {
-          document.getElementById('total-queries').textContent = data.stats.totalQueries;
-          document.getElementById('queries-24h').textContent = data.stats.queriesLast24h;
-          document.getElementById('total-earned').textContent = data.stats.totalEarnings;
+        const r = await fetch(`${API}/v1/stats`);
+        const d = await r.json();
+        if (d.success) {
+          document.getElementById('total-queries').textContent = d.stats.totalQueries;
+          document.getElementById('queries-24h').textContent = d.stats.queriesLast24h;
+          document.getElementById('total-earned').textContent = d.stats.totalEarnings;
         }
-      } catch (e) {}
+      } catch(e) {}
     }
 
     async function loadQueries(type = '') {
-      const container = document.getElementById('query-list');
-      container.innerHTML = '<div class="loading">Loading paid query data...</div>';
-
+      const list = document.getElementById('query-list');
+      list.innerHTML = '<div class="empty">Loading...</div>';
       try {
-        const url = type ? `${API_BASE}/v1/logs?type=${type}&limit=20` : `${API_BASE}/v1/logs?limit=20`;
-        const res = await fetch(url);
-        const data = await res.json();
-
-        if (!data.success || !data.logs.length) {
-          container.innerHTML = '<div class="empty">No paid queries yet</div>';
+        const url = type ? `${API}/v1/logs?type=${type}&limit=20` : `${API}/v1/logs?limit=20`;
+        const r = await fetch(url);
+        const d = await r.json();
+        if (!d.success || !d.logs.length) {
+          list.innerHTML = '<div class="empty">No queries yet</div>';
           return;
         }
-
-        container.innerHTML = data.logs.map(q => {
-          let responseData = {};
-          try {
-            const rawResponse = q.full_response || q.response_summary || '{}';
-            const parsed = JSON.parse(rawResponse);
-            responseData = parsed.result || parsed;
-          } catch (e) {}
-          
+        list.innerHTML = d.logs.map((q, i) => {
+          let data = {};
+          try { const p = JSON.parse(q.full_response || '{}'); data = p.result || p; } catch(e) {}
           return `
-          <div class="query-item">
-            <div class="query-item-header">
-              <div class="query-item-meta">
-                <span class="type-badge ${q.query_type}">${q.query_type.replace('_', ' ')}</span>
-                <span class="timestamp">${formatTime(q.timestamp)}</span>
+            <div class="query-card${i === 0 ? ' expanded' : ''}" onclick="this.classList.toggle('expanded')">
+              <div class="query-card-header">
+                <div class="query-card-meta">
+                  <span class="type-pill ${q.query_type}">${q.query_type.replace('_',' ')}</span>
+                  <span class="timestamp">${fmtTime(q.timestamp)}</span>
+                </div>
+                <div class="query-card-right">
+                  <a class="address-link" href="https://basescan.org/address/${q.client_address}" target="_blank" onclick="event.stopPropagation()">${q.client_address?.slice(0,6)}...${q.client_address?.slice(-4)}</a>
+                  <span class="amount-badge">$${parseFloat(q.amount_usdc||0).toFixed(2)}</span>
+                  <span class="expand-icon">▼</span>
+                </div>
               </div>
-              <div class="query-item-right">
-                <span class="address">
-                  ${q.client_address ? `<a href="https://basescan.org/address/${q.client_address}" target="_blank">${truncateAddress(q.client_address)}</a>` : '-'}
-                </span>
-                <span class="amount">$${parseFloat(q.amount_usdc || 0).toFixed(2)}</span>
+              <div class="query-card-body">
+                ${fmt(q.query_type, data)}
+                <details class="json-toggle">
+                  <summary>View Raw JSON</summary>
+                  <pre class="json-block">${JSON.stringify(data, null, 2)}</pre>
+                </details>
               </div>
             </div>
-            <div class="query-item-body">${formatResponse(q.query_type, responseData)}</div>
-          </div>
-        `}).join('');
-      } catch (e) {
-        container.innerHTML = '<div class="empty">Failed to load</div>';
+          `;
+        }).join('');
+      } catch(e) {
+        list.innerHTML = '<div class="empty">Failed to load</div>';
       }
     }
 
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentType = btn.dataset.type;
-        loadQueries(currentType);
-      });
-    });
+    document.getElementById('connect-btn').addEventListener('click', connect);
+    document.getElementById('execute-btn').addEventListener('click', execute);
+    document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      currentFilter = t.dataset.type;
+      loadQueries(currentFilter);
+    }));
 
     loadStats();
     loadQueries();
-    setInterval(() => { loadStats(); loadQueries(currentType); }, 30000);
-    if (window.ethereum?.selectedAddress) connectWallet();
+    setInterval(() => { loadStats(); loadQueries(currentFilter); }, 30000);
+    if (window.ethereum?.selectedAddress) connect();
   </script>
 </body>
 </html>
