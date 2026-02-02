@@ -632,7 +632,7 @@
         let clientsArray = Array.isArray(clients) ? clients : 
           Object.entries(clients).map(([name, count]) => ({ name, nodeCount: count }));
         
-        const totalNodes = clientsArray.reduce((sum, c) => sum + (c.nodeCount || c.count || 0), 0);
+        const totalNodes = clientsArray.reduce((sum, c) => sum + (c.nodes || c.nodeCount || c.count || 0), 0);
         
         return `
           <div class="data-section">
@@ -661,7 +661,7 @@
             <div class="data-section-title">Client Distribution (${totalNodes} nodes)</div>
             <div class="client-bar">
               ${clientsArray.map(c => {
-                const pct = ((c.nodeCount || c.count || 0) / totalNodes * 100);
+                const pct = ((c.nodes || c.nodeCount || c.count || 0) / totalNodes * 100);
                 const color = CLIENT_COLORS[c.name?.toLowerCase()] || '#666';
                 return `<div class="client-bar-segment" style="width: ${pct}%; background: ${color}"></div>`;
               }).join('')}
@@ -669,7 +669,7 @@
             <div class="client-legend">
               ${clientsArray.map(c => {
                 const color = CLIENT_COLORS[c.name?.toLowerCase()] || '#666';
-                const pct = ((c.nodeCount || c.count || 0) / totalNodes * 100).toFixed(1);
+                const pct = ((c.nodes || c.nodeCount || c.count || 0) / totalNodes * 100).toFixed(1);
                 return `<div class="client-legend-item">
                   <div class="client-legend-dot" style="background: ${color}"></div>
                   <span>${c.name} ${pct}%</span>
