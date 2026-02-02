@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reldo x402 Explorer</title>
-  <meta name="description" content="Pay-per-query Ethereum data API. $0.01 USDC on Base.">
+  <title>x402 Explorer | Pay-per-query Ethereum Data</title>
+  <meta name="description" content="Real-time Ethereum network data from 160+ globally distributed nodes. $0.01 per query via USDC on Base.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
@@ -13,14 +13,21 @@
     :root {
       --bg: #0a0a0a;
       --surface: #0f0f0f;
-      --surface-hover: #161616;
+      --surface-2: #141414;
+      --surface-hover: #1a1a1a;
       --text: #e8e8e8;
-      --dim: #666;
-      --muted: #444;
+      --dim: #888;
+      --muted: #555;
       --accent: #00ff88;
-      --accent-dim: #00aa5a;
-      --border: #1a1a1a;
+      --accent-dim: #00cc6a;
+      --accent-glow: rgba(0, 255, 136, 0.15);
+      --border: #222;
       --red: #ff4444;
+      --yellow: #eab308;
+      --purple: #a855f7;
+      --cyan: #06b6d4;
+      --pink: #ec4899;
+      --orange: #f97316;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -28,6 +35,7 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      line-height: 1.6;
     }
     .noise {
       position: fixed;
@@ -35,9 +43,10 @@
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
       opacity: 0.03;
       pointer-events: none;
+      z-index: 0;
     }
     .container {
-      max-width: 1000px;
+      max-width: 1100px;
       margin: 0 auto;
       padding: 48px 24px;
       position: relative;
@@ -49,53 +58,105 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 48px;
-      padding-bottom: 24px;
+      margin-bottom: 64px;
+      padding-bottom: 32px;
       border-bottom: 1px solid var(--border);
     }
     .brand h1 {
       font-family: 'Instrument Serif', serif;
-      font-size: 2rem;
+      font-size: 2.5rem;
       font-weight: 400;
-      margin-bottom: 4px;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
     }
     .brand h1 span { color: var(--accent); font-style: italic; }
     .brand .tagline {
-      font-size: 11px;
+      font-size: 12px;
       color: var(--dim);
       text-transform: uppercase;
-      letter-spacing: 0.15em;
+      letter-spacing: 0.2em;
     }
     .nav-links {
       display: flex;
-      gap: 16px;
+      gap: 20px;
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
     }
     .nav-links a {
-      color: var(--dim);
+      color: var(--muted);
       text-decoration: none;
-      transition: color 0.15s;
+      transition: color 0.2s;
     }
     .nav-links a:hover { color: var(--accent); }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+    .hero h2 {
+      font-family: 'Instrument Serif', serif;
+      font-size: 2.8rem;
+      font-weight: 400;
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+    .hero h2 em { font-style: italic; color: var(--accent); }
+    .hero p {
+      font-size: 14px;
+      color: var(--dim);
+      max-width: 600px;
+      margin: 0 auto 32px;
+    }
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      margin-top: 32px;
+    }
+    .hero-stat {
+      text-align: center;
+    }
+    .hero-stat .num {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .hero-stat .label {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-top: 4px;
+    }
 
     /* Query Section */
     .query-section {
       background: var(--surface);
       border: 1px solid var(--border);
-      padding: 24px;
-      margin-bottom: 32px;
+      padding: 32px;
+      margin-bottom: 48px;
+      position: relative;
+    }
+    .query-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), transparent);
     }
     .query-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
     .query-header h2 {
       font-family: 'Instrument Serif', serif;
-      font-size: 1.5rem;
+      font-size: 1.75rem;
       font-weight: 400;
       font-style: italic;
     }
@@ -103,17 +164,18 @@
       background: transparent;
       border: 1px solid var(--accent);
       color: var(--accent);
-      padding: 8px 16px;
+      padding: 10px 20px;
       font-family: 'Space Mono', monospace;
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all 0.2s;
     }
     .connect-btn:hover {
       background: var(--accent);
       color: var(--bg);
+      box-shadow: 0 0 20px var(--accent-glow);
     }
     .connect-btn.connected {
       background: var(--accent);
@@ -128,50 +190,54 @@
     .form-group label {
       display: block;
       font-size: 10px;
-      color: var(--dim);
+      color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.1em;
       margin-bottom: 8px;
     }
     .form-group select, .form-group input {
       width: 100%;
-      padding: 12px;
+      padding: 14px 16px;
       background: var(--bg);
       border: 1px solid var(--border);
       color: var(--text);
       font-family: 'Space Mono', monospace;
       font-size: 13px;
+      transition: border-color 0.2s;
     }
     .form-group select:focus, .form-group input:focus {
       outline: none;
       border-color: var(--accent-dim);
     }
     .price-tag {
-      padding: 12px 20px;
-      background: rgba(0, 255, 136, 0.1);
+      padding: 14px 24px;
+      background: var(--accent-glow);
       border: 1px solid var(--accent-dim);
       color: var(--accent);
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 700;
     }
     .ask-btn {
       background: var(--accent);
       border: none;
       color: var(--bg);
-      padding: 12px 24px;
+      padding: 14px 32px;
       font-family: 'Space Mono', monospace;
       font-size: 12px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       cursor: pointer;
-      transition: opacity 0.15s;
+      transition: all 0.2s;
     }
-    .ask-btn:hover { opacity: 0.9; }
-    .ask-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .ask-btn:hover {
+      box-shadow: 0 0 30px var(--accent-glow);
+      transform: translateY(-1px);
+    }
+    .ask-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
     .query-info {
       margin-top: 16px;
-      font-size: 11px;
+      font-size: 12px;
       color: var(--dim);
     }
     .network-warning {
@@ -188,7 +254,7 @@
       background: var(--red);
       border: none;
       color: white;
-      padding: 4px 12px;
+      padding: 6px 14px;
       font-family: 'Space Mono', monospace;
       font-size: 10px;
       cursor: pointer;
@@ -196,7 +262,7 @@
 
     /* Result Display */
     .result-box {
-      margin-top: 20px;
+      margin-top: 24px;
       background: var(--bg);
       border: 1px solid var(--border);
       display: none;
@@ -210,103 +276,104 @@
       align-items: center;
       padding: 12px 16px;
       border-bottom: 1px solid var(--border);
-      background: rgba(255,255,255,0.02);
+      background: var(--surface-2);
     }
     .result-label {
       font-size: 9px;
-      color: var(--dim);
+      color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.15em;
     }
     .result-toggle {
       background: transparent;
       border: 1px solid var(--border);
-      color: var(--dim);
-      padding: 4px 8px;
+      color: var(--muted);
+      padding: 4px 10px;
       font-family: 'Space Mono', monospace;
       font-size: 9px;
       cursor: pointer;
+      transition: all 0.2s;
     }
     .result-toggle:hover { color: var(--accent); border-color: var(--accent-dim); }
-    .result-content {
-      padding: 16px;
-    }
+    .result-content { padding: 20px; }
     .result-raw {
       font-size: 11px;
-      line-height: 1.5;
+      line-height: 1.6;
       white-space: pre-wrap;
       word-break: break-word;
-      color: var(--text);
+      color: var(--dim);
       display: none;
       max-height: 400px;
       overflow-y: auto;
     }
     .result-raw.visible { display: block; }
 
-    /* Formatted Response Components */
+    /* Data Components */
     .response-formatted { display: block; }
     .response-formatted.hidden { display: none; }
     
     .data-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
     }
     .data-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      padding: 16px;
+      padding: 20px;
+      transition: border-color 0.2s;
     }
+    .data-card:hover { border-color: var(--muted); }
     .data-card .card-label {
       font-size: 9px;
-      color: var(--dim);
+      color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
     .data-card .card-value {
-      font-size: 18px;
+      font-size: 22px;
       font-weight: 700;
     }
     .data-card .card-value.accent { color: var(--accent); }
-    .data-card .card-value.warning { color: #eab308; }
+    .data-card .card-value.warning { color: var(--yellow); }
     .data-card .card-sub {
       font-size: 10px;
-      color: var(--dim);
+      color: var(--muted);
       margin-top: 4px;
     }
 
     .data-section {
-      margin-top: 16px;
+      margin-top: 20px;
     }
     .data-section:first-child { margin-top: 0; }
     .data-section-title {
       font-size: 10px;
       color: var(--dim);
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 12px;
+      letter-spacing: 0.12em;
+      margin-bottom: 16px;
       padding-bottom: 8px;
       border-bottom: 1px solid var(--border);
     }
 
     .client-bar {
       display: flex;
-      height: 8px;
+      height: 12px;
       background: var(--surface);
-      border-radius: 4px;
+      border-radius: 6px;
       overflow: hidden;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
     }
     .client-bar-segment {
       height: 100%;
-      transition: width 0.3s;
+      transition: width 0.5s ease-out;
     }
     .client-legend {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
-      font-size: 10px;
+      gap: 16px;
+      font-size: 11px;
     }
     .client-legend-item {
       display: flex;
@@ -314,60 +381,114 @@
       gap: 6px;
     }
     .client-legend-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 2px;
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
     }
 
-    .metric-row {
+    /* Examples Section */
+    .examples-section {
+      margin-bottom: 48px;
+    }
+    .examples-section h3 {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.5rem;
+      font-weight: 400;
+      margin-bottom: 24px;
+    }
+    .examples-section h3 em { font-style: italic; color: var(--accent); }
+    .example-tabs {
       display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 12px;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
     }
-    .metric-row:last-child { border-bottom: none; }
-    .metric-label { color: var(--dim); }
-    .metric-value { font-weight: 700; }
+    .example-tab {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 10px 18px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .example-tab:hover {
+      border-color: var(--muted);
+      color: var(--text);
+    }
+    .example-tab.active {
+      border-color: var(--accent-dim);
+      color: var(--accent);
+      background: var(--accent-glow);
+    }
+    .example-content {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 24px;
+      display: none;
+    }
+    .example-content.active { display: block; }
+    .example-description {
+      font-size: 13px;
+      color: var(--dim);
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
 
-    /* Stats */
-    .stats-grid {
+    /* Live Stats */
+    .live-stats {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 16px;
-      margin-bottom: 32px;
+      margin-bottom: 48px;
     }
     .stat-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      padding: 20px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent);
+      opacity: 0.3;
     }
     .stat-card .label {
       font-size: 10px;
-      color: var(--dim);
+      color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.1em;
       margin-bottom: 8px;
     }
     .stat-card .value {
-      font-size: 24px;
+      font-size: 28px;
       font-weight: 700;
     }
     .stat-card .value.accent { color: var(--accent); }
 
-    /* Filters */
+    /* Query Log */
     .section-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
     .section-header h3 {
-      font-size: 10px;
-      color: var(--dim);
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.5rem;
+      font-weight: 400;
     }
+    .section-header h3 em { font-style: italic; color: var(--accent); }
     .filters {
       display: flex;
       gap: 8px;
@@ -375,21 +496,21 @@
     .filter-btn {
       background: transparent;
       border: 1px solid var(--border);
-      color: var(--dim);
-      padding: 6px 12px;
+      color: var(--muted);
+      padding: 8px 14px;
       font-family: 'Space Mono', monospace;
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all 0.2s;
     }
     .filter-btn:hover, .filter-btn.active {
       border-color: var(--accent-dim);
       color: var(--accent);
     }
 
-    /* Query Log Cards */
+    /* Query Cards */
     .query-log {
       display: flex;
       flex-direction: column;
@@ -399,17 +520,23 @@
       background: var(--surface);
       border: 1px solid var(--border);
       cursor: pointer;
-      transition: border-color 0.15s;
+      transition: all 0.2s;
     }
     .query-card:hover {
+      border-color: var(--muted);
+    }
+    .query-card.expanded {
       border-color: var(--accent-dim);
     }
     .query-card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px;
-      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      border-bottom: 1px solid transparent;
+    }
+    .query-card.expanded .query-card-header {
+      border-bottom-color: var(--border);
     }
     .query-card-meta {
       display: flex;
@@ -419,53 +546,52 @@
     .query-card-right {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 20px;
     }
     .type-badge {
       display: inline-block;
-      padding: 4px 8px;
+      padding: 5px 10px;
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       border: 1px solid;
+      font-weight: 700;
     }
-    .type-badge.gas { border-color: #eab308; color: #eab308; }
-    .type-badge.block { border-color: #a855f7; color: #a855f7; }
+    .type-badge.gas { border-color: var(--yellow); color: var(--yellow); }
+    .type-badge.block { border-color: var(--purple); color: var(--purple); }
     .type-badge.network { border-color: var(--accent); color: var(--accent); }
-    .type-badge.validators { border-color: #ec4899; color: #ec4899; }
-    .type-badge.mev { border-color: #f97316; color: #f97316; }
-    .type-badge.slot_analysis { border-color: #06b6d4; color: #06b6d4; }
-    .timestamp { color: var(--dim); font-size: 11px; }
-    .address { color: var(--dim); font-size: 11px; }
+    .type-badge.validators { border-color: var(--pink); color: var(--pink); }
+    .type-badge.mev { border-color: var(--orange); color: var(--orange); }
+    .type-badge.slot_analysis { border-color: var(--cyan); color: var(--cyan); }
+    .timestamp { color: var(--muted); font-size: 11px; }
+    .address { color: var(--muted); font-size: 11px; }
     .address a { color: var(--accent); text-decoration: none; }
     .address a:hover { text-decoration: underline; }
-    .amount { color: var(--accent); font-weight: 700; font-size: 12px; }
+    .amount { color: var(--accent); font-weight: 700; font-size: 13px; }
     
     .query-card-body {
-      padding: 16px;
+      padding: 20px;
       display: none;
+      background: var(--bg);
     }
-    .query-card.expanded .query-card-body {
-      display: block;
-    }
+    .query-card.expanded .query-card-body { display: block; }
     .query-card-preview {
-      padding: 16px;
-      font-size: 11px;
+      padding: 12px 20px;
+      font-size: 12px;
       color: var(--dim);
-      border-top: none;
+      background: var(--surface-2);
     }
-    .query-card.expanded .query-card-preview {
-      display: none;
-    }
+    .query-card.expanded .query-card-preview { display: none; }
     .expand-hint {
       font-size: 10px;
       color: var(--muted);
+      margin-left: 8px;
     }
 
     .empty, .loading {
       text-align: center;
-      padding: 48px;
-      color: var(--dim);
+      padding: 64px;
+      color: var(--muted);
       font-size: 12px;
       background: var(--surface);
       border: 1px solid var(--border);
@@ -473,26 +599,35 @@
 
     /* Footer */
     footer {
-      margin-top: 48px;
-      padding-top: 24px;
+      margin-top: 64px;
+      padding-top: 32px;
       border-top: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
-      font-size: 10px;
+      align-items: center;
+      font-size: 11px;
       color: var(--muted);
     }
     footer a { color: var(--dim); text-decoration: none; }
     footer a:hover { color: var(--accent); }
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
 
     @media (max-width: 768px) {
       .container { padding: 24px 16px; }
       header { flex-direction: column; gap: 16px; }
+      .hero h2 { font-size: 2rem; }
+      .hero-stats { gap: 24px; }
       .query-form { grid-template-columns: 1fr; }
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .live-stats { grid-template-columns: repeat(2, 1fr); }
       .filters { flex-wrap: wrap; }
       .data-grid { grid-template-columns: 1fr; }
       .query-card-header { flex-direction: column; gap: 12px; align-items: flex-start; }
       .query-card-right { width: 100%; justify-content: space-between; }
+      .example-tabs { gap: 6px; }
+      .example-tab { padding: 8px 12px; font-size: 10px; }
     }
   </style>
 </head>
@@ -502,7 +637,7 @@
     <header>
       <div class="brand">
         <h1>x402 Explorer<span>.</span></h1>
-        <p class="tagline">Pay-per-query Ethereum Data</p>
+        <p class="tagline">Ethereum Network Intelligence</p>
       </div>
       <nav class="nav-links">
         <a href="https://reldothescribe.github.io">Research</a>
@@ -512,9 +647,221 @@
       </nav>
     </header>
 
+    <section class="hero">
+      <h2>Real-time Ethereum data<br>from <em>160+ global nodes</em></h2>
+      <p>Query live network health, block propagation, client diversity, validator performance, and MEV statistics. Pay $0.01 per query with USDC on Base.</p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="num">163</div>
+          <div class="label">Xatu Nodes</div>
+        </div>
+        <div class="hero-stat">
+          <div class="num">8</div>
+          <div class="label">Client Types</div>
+        </div>
+        <div class="hero-stat">
+          <div class="num">15+</div>
+          <div class="label">Countries</div>
+        </div>
+        <div class="hero-stat">
+          <div class="num">$0.01</div>
+          <div class="label">Per Query</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="examples-section">
+      <h3>Example <em>Responses</em></h3>
+      <div class="example-tabs">
+        <button class="example-tab active" data-example="network">Network Health</button>
+        <button class="example-tab" data-example="gas">Gas Analysis</button>
+        <button class="example-tab" data-example="block">Latest Block</button>
+        <button class="example-tab" data-example="validators">Validators</button>
+        <button class="example-tab" data-example="mev">MEV Stats</button>
+      </div>
+      
+      <div class="example-content active" id="example-network">
+        <p class="example-description">Network-wide block propagation timing, client distribution across 160+ globally distributed nodes, and geographic breakdown.</p>
+        <div class="data-section">
+          <div class="data-section-title">Block Propagation (Last Hour)</div>
+          <div class="data-grid">
+            <div class="data-card">
+              <div class="card-label">Slots Observed</div>
+              <div class="card-value">297</div>
+            </div>
+            <div class="data-card">
+              <div class="card-label">Avg Propagation</div>
+              <div class="card-value accent">3.56s</div>
+            </div>
+            <div class="data-card">
+              <div class="card-label">P50 (Median)</div>
+              <div class="card-value">2.10s</div>
+            </div>
+            <div class="data-card">
+              <div class="card-label">P95</div>
+              <div class="card-value">3.53s</div>
+            </div>
+          </div>
+        </div>
+        <div class="data-section">
+          <div class="data-section-title">Client Distribution (163 nodes)</div>
+          <div class="client-bar">
+            <div class="client-bar-segment" style="width: 28.8%; background: #00d4aa"></div>
+            <div class="client-bar-segment" style="width: 18.4%; background: #f39c12"></div>
+            <div class="client-bar-segment" style="width: 17.8%; background: #9b59b6"></div>
+            <div class="client-bar-segment" style="width: 15.3%; background: #3498db"></div>
+            <div class="client-bar-segment" style="width: 14.1%; background: #e74c3c"></div>
+            <div class="client-bar-segment" style="width: 5.6%; background: #1abc9c"></div>
+          </div>
+          <div class="client-legend">
+            <div class="client-legend-item"><div class="client-legend-dot" style="background: #00d4aa"></div><span>Prysm 28.8%</span></div>
+            <div class="client-legend-item"><div class="client-legend-dot" style="background: #f39c12"></div><span>Nimbus 18.4%</span></div>
+            <div class="client-legend-item"><div class="client-legend-dot" style="background: #9b59b6"></div><span>Lighthouse 17.8%</span></div>
+            <div class="client-legend-item"><div class="client-legend-dot" style="background: #3498db"></div><span>Teku 15.3%</span></div>
+            <div class="client-legend-item"><div class="client-legend-dot" style="background: #e74c3c"></div><span>Lodestar 14.1%</span></div>
+            <div class="client-legend-item"><div class="client-legend-dot" style="background: #1abc9c"></div><span>Others 5.6%</span></div>
+          </div>
+        </div>
+        <div class="data-section">
+          <div class="data-section-title">Geographic Distribution (Top 5)</div>
+          <div class="data-grid">
+            <div class="data-card">
+              <div class="card-label">Finland</div>
+              <div class="card-value">39</div>
+              <div class="card-sub">2066ms avg</div>
+            </div>
+            <div class="data-card">
+              <div class="card-label">United States</div>
+              <div class="card-value">37</div>
+              <div class="card-sub">2260ms avg</div>
+            </div>
+            <div class="data-card">
+              <div class="card-label">Germany</div>
+              <div class="card-value">17</div>
+              <div class="card-sub">2180ms avg</div>
+            </div>
+            <div class="data-card">
+              <div class="card-label">Australia</div>
+              <div class="card-value">16</div>
+              <div class="card-sub">2369ms avg</div>
+            </div>
+            <div class="data-card">
+              <div class="card-label">Canada</div>
+              <div class="card-value">11</div>
+              <div class="card-sub">2633ms avg</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="example-content" id="example-gas">
+        <p class="example-description">Real-time gas analysis including base fee statistics, utilization rates, and gas price trends.</p>
+        <div class="data-section">
+          <div class="data-section-title">Gas Statistics</div>
+          <div class="data-grid">
+            <div class="data-card">
+              <div class="card-label">Base Fee (Avg)</div>
+              <div class="card-value accent">12.4 gwei</div>
+            </div>
+            <div class="data-card">
+              <div class="card-label">Base Fee (P50)</div>
+              <div class="card-value">11.2 gwei</div>
+            </div>
+            <div class="data-card">
+              <div class="card-label">Gas Utilization</div>
+              <div class="card-value">62.3%</div>
+            </div>
+            <div class="data-card">
+              <div class="card-label">Blocks Analyzed</div>
+              <div class="card-value">300</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="example-content" id="example-block">
+        <p class="example-description">Latest block information including slot number, proposer, propagation timing, and execution details.</p>
+        <div class="data-section">
+          <div class="data-section-title">Latest Block</div>
+          <div class="data-grid">
+            <div class="data-card">
+              <div class="card-label">Slot</div>
+              <div class="card-value accent">10,847,232</div>
+            </div>
+            <div class="data-card">
+              <div class="card-label">Block Number</div>
+              <div class="card-value">21,432,891</div>
+            </div>
+            <div class="data-card">
+              <div class="card-label">Proposer Index</div>
+              <div class="card-value">847,291</div>
+            </div>
+            <div class="data-card">
+              <div class="card-label">Propagation</div>
+              <div class="card-value">1.89s</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="example-content" id="example-validators">
+        <p class="example-description">Validator attestation performance including head/target vote accuracy and inclusion distance metrics.</p>
+        <div class="data-section">
+          <div class="data-section-title">Attestation Performance</div>
+          <div class="data-grid">
+            <div class="data-card">
+              <div class="card-label">Attestations</div>
+              <div class="card-value">128,000</div>
+            </div>
+            <div class="data-card">
+              <div class="card-label">Head Vote Accuracy</div>
+              <div class="card-value accent">98.7%</div>
+            </div>
+            <div class="data-card">
+              <div class="card-label">Target Vote Accuracy</div>
+              <div class="card-value">99.2%</div>
+            </div>
+            <div class="data-card">
+              <div class="card-label">Avg Inclusion Distance</div>
+              <div class="card-value">1.02 slots</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="example-content" id="example-mev">
+        <p class="example-description">MEV and block builder statistics showing which builders are producing blocks and their market share.</p>
+        <div class="data-section">
+          <div class="data-section-title">Builder Distribution (Last 1000 blocks)</div>
+          <div class="data-grid">
+            <div class="data-card">
+              <div class="card-label">Titan Builder</div>
+              <div class="card-value">312</div>
+              <div class="card-sub">31.2% share</div>
+            </div>
+            <div class="data-card">
+              <div class="card-label">Beaver Build</div>
+              <div class="card-value">287</div>
+              <div class="card-sub">28.7% share</div>
+            </div>
+            <div class="data-card">
+              <div class="card-label">Rsync Builder</div>
+              <div class="card-value">198</div>
+              <div class="card-sub">19.8% share</div>
+            </div>
+            <div class="data-card">
+              <div class="card-label">Flashbots</div>
+              <div class="card-value">142</div>
+              <div class="card-sub">14.2% share</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <div class="query-section">
       <div class="query-header">
-        <h2>Query</h2>
+        <h2>Execute Query</h2>
         <button class="connect-btn" id="connect-btn">Connect Wallet</button>
       </div>
       
@@ -522,9 +869,9 @@
         <div class="form-group">
           <label>Query Type</label>
           <select id="query-type" onchange="toggleQueryInput()">
+            <option value="network">Network Health</option>
             <option value="gas">Gas Analysis</option>
             <option value="block">Latest Block</option>
-            <option value="network">Network Health</option>
             <option value="validators">Validator Stats</option>
             <option value="mev">MEV / Builders</option>
             <option value="slot_analysis">Slot Analysis</option>
@@ -540,18 +887,18 @@
       </div>
 
       <div class="query-info">
-        <span id="query-description">Base fee stats and gas utilization from xatu network data</span>
+        <span id="query-description">Network-wide block propagation, client distribution, and geographic breakdown</span>
       </div>
 
       <div class="network-warning" id="network-warning">
         <span>Switch to Base network to make queries</span>
-        <button onclick="switchToBase()">Switch</button>
+        <button onclick="switchToBase()">Switch Network</button>
       </div>
 
       <div class="result-box" id="result-box">
         <div class="result-header">
-          <span class="result-label">Response</span>
-          <button class="result-toggle" onclick="toggleRawView()">View Raw</button>
+          <span class="result-label">Query Result</span>
+          <button class="result-toggle" onclick="toggleRawView()">View Raw JSON</button>
         </div>
         <div class="result-content">
           <div class="response-formatted" id="response-formatted"></div>
@@ -560,7 +907,7 @@
       </div>
     </div>
 
-    <div class="stats-grid" id="stats">
+    <div class="live-stats" id="stats">
       <div class="stat-card">
         <div class="label">Total Queries</div>
         <div class="value" id="total-queries">-</div>
@@ -570,34 +917,38 @@
         <div class="value" id="queries-24h">-</div>
       </div>
       <div class="stat-card">
-        <div class="label">Earned</div>
+        <div class="label">Total Earned</div>
         <div class="value accent" id="total-earned">-</div>
       </div>
       <div class="stat-card">
-        <div class="label">Agent ID</div>
+        <div class="label">EIP-8004 Agent</div>
         <div class="value">#22793</div>
       </div>
     </div>
 
     <div class="section-header">
-      <h3>Query Log</h3>
+      <h3>Recent <em>Queries</em></h3>
       <div class="filters">
         <button class="filter-btn active" data-type="">All</button>
+        <button class="filter-btn" data-type="network">Network</button>
         <button class="filter-btn" data-type="gas">Gas</button>
         <button class="filter-btn" data-type="block">Block</button>
-        <button class="filter-btn" data-type="network">Network</button>
         <button class="filter-btn" data-type="validators">Validators</button>
         <button class="filter-btn" data-type="mev">MEV</button>
       </div>
     </div>
 
     <div class="query-log" id="query-log">
-      <div class="loading">Loading...</div>
+      <div class="loading">Loading query history...</div>
     </div>
 
     <footer>
-      <span>Base mainnet · USDC payments</span>
-      <a href="https://reldo-x402-api.reldo.workers.dev/">API</a>
+      <span>Base mainnet · USDC payments · EIP-3009 signatures</span>
+      <div class="footer-links">
+        <a href="https://reldo-x402-api.reldo.workers.dev/">API</a>
+        <a href="https://reldo-x402-api.reldo.workers.dev/.well-known/agent-card.json">Agent Card</a>
+        <a href="https://github.com/reldothescribe/reldo-explorer">Source</a>
+      </div>
     </footer>
   </div>
 
@@ -614,7 +965,9 @@
       teku: '#3498db',
       nimbus: '#f39c12',
       lodestar: '#e74c3c',
-      grandine: '#1abc9c'
+      grandine: '#1abc9c',
+      tysm: '#34495e',
+      caplin: '#95a5a6'
     };
 
     let provider = null;
@@ -623,16 +976,23 @@
     let currentType = '';
     let showRaw = false;
 
-    // Response formatters for each query type
+    // Example tabs
+    document.querySelectorAll('.example-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.example-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.example-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('example-' + tab.dataset.example).classList.add('active');
+      });
+    });
+
+    // Response formatters
     const formatters = {
       network: (data) => {
         const prop = data.propagation || {};
-        const clients = data.clients || data.clientDistribution || [];
-        
-        let clientsArray = Array.isArray(clients) ? clients : 
-          Object.entries(clients).map(([name, count]) => ({ name, nodeCount: count }));
-        
-        const totalNodes = clientsArray.reduce((sum, c) => sum + (c.nodes || c.nodeCount || c.count || 0), 0);
+        const clients = data.clients || [];
+        const geo = data.geography || [];
+        const totalNodes = clients.reduce((sum, c) => sum + (c.nodes || 0), 0);
         
         return `
           <div class="data-section">
@@ -640,36 +1000,36 @@
             <div class="data-grid">
               <div class="data-card">
                 <div class="card-label">Slots Observed</div>
-                <div class="card-value">${prop.slotsObserved || data.blocks?.observed || '-'}</div>
+                <div class="card-value">${prop.slotsObserved || '-'}</div>
               </div>
               <div class="data-card">
                 <div class="card-label">Avg Propagation</div>
-                <div class="card-value accent">${formatMs(prop.average_ms || data.blocks?.avgPropagation_ms)}</div>
+                <div class="card-value accent">${formatMs(prop.average_ms)}</div>
               </div>
               <div class="data-card">
-                <div class="card-label">P50</div>
-                <div class="card-value">${formatMs(prop.p50_ms || data.blocks?.p50_ms)}</div>
+                <div class="card-label">P50 (Median)</div>
+                <div class="card-value">${formatMs(prop.p50_ms)}</div>
               </div>
               <div class="data-card">
                 <div class="card-label">P95</div>
-                <div class="card-value ${(prop.p95_ms || 0) > 4000 ? 'warning' : ''}">${formatMs(prop.p95_ms || data.blocks?.p95_ms)}</div>
+                <div class="card-value ${(prop.p95_ms || 0) > 4000 ? 'warning' : ''}">${formatMs(prop.p95_ms)}</div>
               </div>
             </div>
           </div>
-          ${clientsArray.length ? `
+          ${clients.length ? `
           <div class="data-section">
             <div class="data-section-title">Client Distribution (${totalNodes} nodes)</div>
             <div class="client-bar">
-              ${clientsArray.map(c => {
-                const pct = ((c.nodes || c.nodeCount || c.count || 0) / totalNodes * 100);
+              ${clients.map(c => {
+                const pct = ((c.nodes || 0) / totalNodes * 100);
                 const color = CLIENT_COLORS[c.name?.toLowerCase()] || '#666';
                 return `<div class="client-bar-segment" style="width: ${pct}%; background: ${color}"></div>`;
               }).join('')}
             </div>
             <div class="client-legend">
-              ${clientsArray.map(c => {
+              ${clients.map(c => {
                 const color = CLIENT_COLORS[c.name?.toLowerCase()] || '#666';
-                const pct = ((c.nodes || c.nodeCount || c.count || 0) / totalNodes * 100).toFixed(1);
+                const pct = ((c.nodes || 0) / totalNodes * 100).toFixed(1);
                 return `<div class="client-legend-item">
                   <div class="client-legend-dot" style="background: ${color}"></div>
                   <span>${c.name} ${pct}%</span>
@@ -677,28 +1037,42 @@
               }).join('')}
             </div>
           </div>` : ''}
+          ${geo.length ? `
+          <div class="data-section">
+            <div class="data-section-title">Geographic Distribution</div>
+            <div class="data-grid">
+              ${geo.slice(0, 5).map(g => `
+                <div class="data-card">
+                  <div class="card-label">${g.country}</div>
+                  <div class="card-value">${g.nodes}</div>
+                  <div class="card-sub">${formatMs(g.avg_ms)} avg</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>` : ''}
+          ${data.alert ? `<div style="margin-top: 16px; padding: 12px; background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.3); color: #eab308; font-size: 12px;">${data.alert}</div>` : ''}
         `;
       },
       
       gas: (data) => {
         return `
           <div class="data-section">
-            <div class="data-section-title">Gas Analysis</div>
+            <div class="data-section-title">Gas Statistics</div>
             <div class="data-grid">
               <div class="data-card">
-                <div class="card-label">Base Fee (avg)</div>
+                <div class="card-label">Base Fee (Avg)</div>
                 <div class="card-value accent">${data.baseFee?.avg ? (data.baseFee.avg / 1e9).toFixed(2) + ' gwei' : '-'}</div>
               </div>
               <div class="data-card">
-                <div class="card-label">Base Fee (p50)</div>
+                <div class="card-label">Base Fee (P50)</div>
                 <div class="card-value">${data.baseFee?.p50 ? (data.baseFee.p50 / 1e9).toFixed(2) + ' gwei' : '-'}</div>
               </div>
               <div class="data-card">
-                <div class="card-label">Utilization</div>
+                <div class="card-label">Gas Utilization</div>
                 <div class="card-value">${data.utilization ? (data.utilization * 100).toFixed(1) + '%' : '-'}</div>
               </div>
               <div class="data-card">
-                <div class="card-label">Blocks</div>
+                <div class="card-label">Blocks Analyzed</div>
                 <div class="card-value">${data.blocksAnalyzed || '-'}</div>
               </div>
             </div>
@@ -720,8 +1094,8 @@
                 <div class="card-value">${data.blockNumber?.toLocaleString() || '-'}</div>
               </div>
               <div class="data-card">
-                <div class="card-label">Proposer</div>
-                <div class="card-value">${data.proposerIndex || '-'}</div>
+                <div class="card-label">Proposer Index</div>
+                <div class="card-value">${data.proposerIndex?.toLocaleString() || '-'}</div>
               </div>
               <div class="data-card">
                 <div class="card-label">Propagation</div>
@@ -735,10 +1109,10 @@
       validators: (data) => {
         return `
           <div class="data-section">
-            <div class="data-section-title">Validator Performance</div>
+            <div class="data-section-title">Attestation Performance</div>
             <div class="data-grid">
               <div class="data-card">
-                <div class="card-label">Attestations Analyzed</div>
+                <div class="card-label">Attestations</div>
                 <div class="card-value">${data.attestationsAnalyzed?.toLocaleString() || '-'}</div>
               </div>
               <div class="data-card">
@@ -762,18 +1136,18 @@
         const builders = data.builders || [];
         return `
           <div class="data-section">
-            <div class="data-section-title">MEV / Builder Stats</div>
+            <div class="data-section-title">Builder Distribution</div>
             ${builders.length ? `
             <div class="data-grid">
               ${builders.slice(0, 6).map(b => `
                 <div class="data-card">
                   <div class="card-label">${b.name || b.builder || 'Unknown'}</div>
                   <div class="card-value">${b.blocks || b.count || 0}</div>
-                  <div class="card-sub">${b.percentage ? b.percentage.toFixed(1) + '% of blocks' : ''}</div>
+                  <div class="card-sub">${b.percentage ? b.percentage.toFixed(1) + '% share' : ''}</div>
                 </div>
               `).join('')}
             </div>
-            ` : '<div style="color: var(--dim); font-size: 12px;">No builder data available</div>'}
+            ` : '<div style="color: var(--muted); font-size: 12px;">No builder data available</div>'}
           </div>
         `;
       },
@@ -813,7 +1187,7 @@
 
     function formatResponse(type, data) {
       if (data.error) {
-        return `<div style="color: var(--red); font-size: 12px;">Error: ${data.error}</div>`;
+        return `<div style="color: var(--red); font-size: 12px; padding: 12px; background: rgba(255, 68, 68, 0.1); border: 1px solid rgba(255, 68, 68, 0.3);">Error: ${data.error}</div>`;
       }
       const formatter = formatters[type];
       if (formatter) {
@@ -823,7 +1197,7 @@
           console.error('Format error:', e);
         }
       }
-      return `<pre style="font-size: 11px; color: var(--dim);">${JSON.stringify(data, null, 2)}</pre>`;
+      return `<pre style="font-size: 11px; color: var(--dim); white-space: pre-wrap;">${JSON.stringify(data, null, 2)}</pre>`;
     }
 
     function toggleRawView() {
@@ -839,13 +1213,13 @@
       } else {
         formatted.classList.remove('hidden');
         raw.classList.remove('visible');
-        toggle.textContent = 'View Raw';
+        toggle.textContent = 'View Raw JSON';
       }
     }
 
     async function connectWallet() {
       if (!window.ethereum) {
-        alert('Install MetaMask or Rabby');
+        alert('Please install MetaMask or another Web3 wallet');
         return;
       }
       try {
@@ -958,14 +1332,14 @@
       askBtn.disabled = true;
       askBtn.textContent = 'Signing...';
       resultBox.className = 'result-box visible';
-      formatted.innerHTML = '<div style="color: var(--dim);">Waiting for signature...</div>';
+      formatted.innerHTML = '<div style="color: var(--muted); padding: 20px; text-align: center;">Waiting for wallet signature...</div>';
       raw.textContent = '';
 
       try {
         const { signature, authorization } = await signPaymentAuthorization();
         
         askBtn.textContent = 'Querying...';
-        formatted.innerHTML = '<div style="color: var(--dim);">Payment signed. Querying...</div>';
+        formatted.innerHTML = '<div style="color: var(--muted); padding: 20px; text-align: center;">Payment signed. Fetching data...</div>';
 
         const paymentPayload = {
           x402Version: 1,
@@ -999,12 +1373,12 @@
           loadQueries(currentType);
         } else {
           resultBox.classList.add('error');
-          formatted.innerHTML = `<div style="color: var(--red);">${data.error || 'Query failed'}</div>`;
+          formatted.innerHTML = `<div style="color: var(--red); padding: 16px;">${data.error || 'Query failed'}</div>`;
           raw.textContent = JSON.stringify(data, null, 2);
         }
       } catch (e) {
         resultBox.classList.add('error');
-        formatted.innerHTML = `<div style="color: var(--red);">Error: ${e.message || e}</div>`;
+        formatted.innerHTML = `<div style="color: var(--red); padding: 16px;">Error: ${e.message || e}</div>`;
         raw.textContent = e.message || String(e);
       } finally {
         askBtn.disabled = false;
@@ -1013,12 +1387,12 @@
     }
 
     const queryTypeInfo = {
-      gas: { description: 'Base fee stats and gas utilization from xatu', needsInput: false },
-      block: { description: 'Latest block with propagation timing', needsInput: false },
-      network: { description: 'Network health: propagation, clients, geography', needsInput: false },
-      validators: { description: 'Attestation correctness and inclusion distance', needsInput: false },
-      mev: { description: 'Fee recipient / builder distribution', needsInput: false },
-      slot_analysis: { description: 'Deep slot analysis: arrivals, attestations, blobs', needsInput: true, inputLabel: 'Slot Number', placeholder: 'e.g. 13600000' }
+      network: { description: 'Network-wide block propagation, client distribution, and geographic breakdown', needsInput: false },
+      gas: { description: 'Real-time base fee statistics and gas utilization rates', needsInput: false },
+      block: { description: 'Latest block with slot, proposer, and propagation timing', needsInput: false },
+      validators: { description: 'Attestation accuracy and inclusion distance metrics', needsInput: false },
+      mev: { description: 'Block builder distribution and MEV statistics', needsInput: false },
+      slot_analysis: { description: 'Deep analysis of a specific slot: arrivals, attestations, blobs', needsInput: true, inputLabel: 'Slot Number', placeholder: 'e.g. 10847000' }
     };
 
     function toggleQueryInput() {
@@ -1047,7 +1421,7 @@
       const date = new Date(isoString);
       const now = new Date();
       const diff = now - date;
-      if (diff < 60000) return 'now';
+      if (diff < 60000) return 'just now';
       if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
       if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
       return date.toLocaleDateString();
@@ -1072,15 +1446,15 @@
 
     async function loadQueries(type = '') {
       const container = document.getElementById('query-log');
-      container.innerHTML = '<div class="loading">Loading...</div>';
+      container.innerHTML = '<div class="loading">Loading query history...</div>';
 
       try {
-        const url = type ? `${API_BASE}/v1/logs?type=${type}&limit=50` : `${API_BASE}/v1/logs?limit=50`;
+        const url = type ? `${API_BASE}/v1/logs?type=${type}&limit=20` : `${API_BASE}/v1/logs?limit=20`;
         const res = await fetch(url);
         const data = await res.json();
 
         if (!data.success || !data.logs.length) {
-          container.innerHTML = '<div class="empty">No queries yet</div>';
+          container.innerHTML = '<div class="empty">No queries recorded yet. Be the first to query!</div>';
           return;
         }
 
@@ -1098,7 +1472,7 @@
           <div class="query-card" data-idx="${idx}" onclick="toggleCard(this)">
             <div class="query-card-header">
               <div class="query-card-meta">
-                <span class="type-badge ${q.query_type}">${q.query_type}</span>
+                <span class="type-badge ${q.query_type}">${q.query_type.replace('_', ' ')}</span>
                 <span class="timestamp">${formatTime(q.timestamp)}</span>
               </div>
               <div class="query-card-right">
@@ -1108,12 +1482,12 @@
                 <span class="amount">${q.amount_usdc ? '$' + parseFloat(q.amount_usdc).toFixed(2) : '-'}</span>
               </div>
             </div>
-            <div class="query-card-preview">${previewText} <span class="expand-hint">· click to expand</span></div>
+            <div class="query-card-preview">${previewText}<span class="expand-hint">· click to expand</span></div>
             <div class="query-card-body">${formatResponse(q.query_type, responseData)}</div>
           </div>
         `}).join('');
       } catch (e) {
-        container.innerHTML = '<div class="empty">Failed to load</div>';
+        container.innerHTML = '<div class="empty">Failed to load query history</div>';
       }
     }
 
@@ -1121,8 +1495,8 @@
       if (data.error) return 'Error response';
       switch(type) {
         case 'network':
-          const prop = data.propagation || data.blocks || {};
-          return `Avg propagation: ${formatMs(prop.average_ms || prop.avgPropagation_ms)}`;
+          const prop = data.propagation || {};
+          return `Avg propagation: ${formatMs(prop.average_ms)} · ${data.clients?.length || 0} client types`;
         case 'gas':
           return data.baseFee?.avg ? `Avg base fee: ${(data.baseFee.avg / 1e9).toFixed(2)} gwei` : 'Gas analysis';
         case 'block':
