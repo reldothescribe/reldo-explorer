@@ -327,12 +327,8 @@
       letter-spacing: 0.05em;
       border: 1px solid;
     }
-    .type-pill.network { border-color: var(--accent); color: var(--accent); }
-    .type-pill.gas { border-color: var(--yellow); color: var(--yellow); }
-    .type-pill.block { border-color: var(--purple); color: var(--purple); }
-    .type-pill.validators { border-color: var(--pink); color: var(--pink); }
-    .type-pill.mev { border-color: var(--orange); color: var(--orange); }
     .type-pill.slot_analysis { border-color: var(--cyan); color: var(--cyan); }
+    .type-pill.reorg_analysis { border-color: var(--orange); color: var(--orange); }
     .timestamp { font-size: 10px; color: var(--muted); }
     .address-link { font-size: 10px; color: var(--dim); text-decoration: none; }
     .address-link:hover { color: var(--accent); }
@@ -404,15 +400,11 @@
     </header>
 
     <div class="query-bar">
-      <select id="query-type" onchange="toggleSlotInput()">
-        <option value="network">Network Health</option>
-        <option value="gas">Gas Analysis</option>
-        <option value="block">Latest Block</option>
-        <option value="validators">Validators</option>
-        <option value="mev">MEV / Builders</option>
+      <select id="query-type" onchange="toggleQueryInput()">
         <option value="slot_analysis">Slot Analysis</option>
+        <option value="reorg_analysis">Reorg Analysis</option>
       </select>
-      <input type="text" id="slot-input" class="slot-input" placeholder="Slot #">
+      <input type="text" id="query-input" class="slot-input visible" placeholder="Slot #">
       <div class="price">$0.01</div>
       <button class="btn btn-outline" id="connect-btn">Connect Wallet</button>
       <button class="btn btn-primary" id="execute-btn" disabled>Execute</button>
@@ -446,11 +438,8 @@
 
     <div class="tabs">
       <button class="tab active" data-type="">All</button>
-      <button class="tab" data-type="network">Network</button>
-      <button class="tab" data-type="gas">Gas</button>
-      <button class="tab" data-type="block">Block</button>
-      <button class="tab" data-type="validators">Validators</button>
-      <button class="tab" data-type="mev">MEV</button>
+      <button class="tab" data-type="slot_analysis">Slot</button>
+      <button class="tab" data-type="reorg_analysis">Reorg</button>
     </div>
 
     <div class="query-list" id="query-list"><div class="empty">Loading...</div></div>
@@ -479,123 +468,6 @@
     let provider, signer, userAddress, currentFilter = '', viewMode = 'formatted';
 
     const formatters = {
-      network: (d) => {
-        const p = d.propagation || {};
-        const clients = d.clients || [];
-        const geo = d.geography || [];
-        const total = clients.reduce((s, c) => s + (c.nodes || 0), 0);
-
-        return `
-          <div class="section">
-            <div class="section-title">Propagation Timing</div>
-            <div class="metric-grid">
-              <div class="metric"><div class="label">Slots</div><div class="value">${p.slotsObserved || '-'}</div></div>
-              <div class="metric"><div class="label">Average</div><div class="value accent">${fmtMs(p.average_ms)}</div></div>
-              <div class="metric"><div class="label">P50</div><div class="value">${fmtMs(p.p50_ms)}</div></div>
-              <div class="metric"><div class="label">P95</div><div class="value">${fmtMs(p.p95_ms)}</div></div>
-              <div class="metric"><div class="label">P99</div><div class="value">${fmtMs(p.p99_ms)}</div></div>
-              <div class="metric"><div class="label">Fastest</div><div class="value">${fmtMs(p.fastest_ms)}</div></div>
-              <div class="metric"><div class="label">Slowest</div><div class="value warning">${fmtMs(p.slowest_ms)}</div></div>
-            </div>
-          </div>
-          ${clients.length ? `
-          <div class="section">
-            <div class="section-title">Client Distribution · ${total} nodes</div>
-            <div class="bar-chart">
-              ${clients.sort((a,b) => (b.nodes||0) - (a.nodes||0)).map(c => {
-                const pct = total > 0 ? (c.nodes || 0) / total * 100 : 0;
-                const color = COLORS[c.name?.toLowerCase()] || '#666';
-                return `<div class="bar-row">
-                  <div class="bar-label">${c.name}</div>
-                  <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}">${pct > 8 ? pct.toFixed(1)+'%' : ''}</div></div>
-                  <div class="bar-value">${c.nodes} nodes · ${fmtMs(c.avg_ms)}</div>
-                </div>`;
-              }).join('')}
-            </div>
-          </div>` : ''}
-          ${d.clientInsight ? `<div class="insight">${d.clientInsight}</div>` : ''}
-          ${geo.length ? `
-          <div class="section">
-            <div class="section-title">Geographic · ${geo.length} countries</div>
-            <div class="geo-grid">
-              ${geo.map(g => `<div class="geo-item">
-                <span class="country">${g.country}</span>
-                <span class="data"><span class="nodes">${g.nodes}</span><span class="latency">${fmtMs(g.avg_ms)}</span></span>
-              </div>`).join('')}
-            </div>
-          </div>` : ''}
-          ${d.lateBlocks ? `
-          <div class="section">
-            <div class="section-title">Late Blocks</div>
-            <div class="metric-grid">
-              <div class="metric"><div class="label">Count</div><div class="value warning">${d.lateBlocks.count}</div></div>
-              <div class="metric"><div class="label">Rate</div><div class="value warning">${d.lateBlocks.percentage?.toFixed(1)}%</div></div>
-              <div class="metric"><div class="label">Avg Delay</div><div class="value">${fmtMs(d.lateBlocks.avg_ms)}</div></div>
-            </div>
-          </div>` : ''}
-          ${d.alert ? `<div class="insight warning">${d.alert}</div>` : ''}
-        `;
-      },
-
-      gas: (d) => `
-        <div class="section">
-          <div class="section-title">Gas Stats</div>
-          <div class="metric-grid">
-            <div class="metric"><div class="label">Avg Base Fee</div><div class="value accent">${d.baseFee?.avg ? (d.baseFee.avg/1e9).toFixed(2)+' gwei' : '-'}</div></div>
-            <div class="metric"><div class="label">P50</div><div class="value">${d.baseFee?.p50 ? (d.baseFee.p50/1e9).toFixed(2)+' gwei' : '-'}</div></div>
-            <div class="metric"><div class="label">P95</div><div class="value">${d.baseFee?.p95 ? (d.baseFee.p95/1e9).toFixed(2)+' gwei' : '-'}</div></div>
-            <div class="metric"><div class="label">Utilization</div><div class="value">${d.utilization ? (d.utilization*100).toFixed(1)+'%' : '-'}</div></div>
-            <div class="metric"><div class="label">Blocks</div><div class="value">${d.blocksAnalyzed || '-'}</div></div>
-          </div>
-        </div>
-      `,
-
-      block: (d) => `
-        <div class="section">
-          <div class="section-title">Latest Block</div>
-          <div class="metric-grid">
-            <div class="metric"><div class="label">Slot</div><div class="value accent">${d.slot?.toLocaleString() || '-'}</div></div>
-            <div class="metric"><div class="label">Block #</div><div class="value">${d.blockNumber?.toLocaleString() || '-'}</div></div>
-            <div class="metric"><div class="label">Proposer</div><div class="value">${d.proposerIndex?.toLocaleString() || '-'}</div></div>
-            <div class="metric"><div class="label">Propagation</div><div class="value">${fmtMs(d.propagation_ms)}</div></div>
-          </div>
-        </div>
-      `,
-
-      validators: (d) => `
-        <div class="section">
-          <div class="section-title">Attestation Performance</div>
-          <div class="metric-grid">
-            <div class="metric"><div class="label">Analyzed</div><div class="value">${d.attestationsAnalyzed?.toLocaleString() || '-'}</div></div>
-            <div class="metric"><div class="label">Head Accuracy</div><div class="value accent">${d.headVoteAccuracy ? (d.headVoteAccuracy*100).toFixed(2)+'%' : '-'}</div></div>
-            <div class="metric"><div class="label">Target Accuracy</div><div class="value">${d.targetVoteAccuracy ? (d.targetVoteAccuracy*100).toFixed(2)+'%' : '-'}</div></div>
-            <div class="metric"><div class="label">Inclusion Dist</div><div class="value">${d.avgInclusionDistance?.toFixed(2) || '-'} slots</div></div>
-          </div>
-        </div>
-      `,
-
-      mev: (d) => {
-        const builders = d.builders || [];
-        const total = builders.reduce((s, b) => s + (b.blocks || b.count || 0), 0);
-        const colors = ['#00ff88', '#3b82f6', '#a855f7', '#f59e0b', '#ef4444', '#14b8a6'];
-        return `
-          <div class="section">
-            <div class="section-title">Builder Distribution</div>
-            ${builders.length ? `<div class="bar-chart">
-              ${builders.sort((a,b) => (b.blocks||b.count||0) - (a.blocks||a.count||0)).map((b, i) => {
-                const blocks = b.blocks || b.count || 0;
-                const pct = total > 0 ? blocks/total*100 : 0;
-                return `<div class="bar-row">
-                  <div class="bar-label">${b.name || b.builder || '?'}</div>
-                  <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${colors[i%colors.length]}">${pct > 8 ? pct.toFixed(1)+'%' : ''}</div></div>
-                  <div class="bar-value">${blocks.toLocaleString()} blocks</div>
-                </div>`;
-              }).join('')}
-            </div>` : '<div style="color:var(--muted)">No data</div>'}
-          </div>
-        `;
-      },
-
       slot_analysis: (d) => `
         <div class="section">
           <div class="section-title">Slot ${d.slot?.toLocaleString() || '?'}</div>
@@ -607,6 +479,38 @@
             <div class="metric"><div class="label">First Seen</div><div class="value">${fmtMs(d.firstSeen_ms)}</div></div>
           </div>
         </div>
+        ${d.propagation ? `<div class="section">
+          <div class="section-title">Propagation</div>
+          <div class="metric-grid">
+            <div class="metric"><div class="label">Avg</div><div class="value accent">${fmtMs(d.propagation.avg_ms)}</div></div>
+            <div class="metric"><div class="label">P50</div><div class="value">${fmtMs(d.propagation.p50_ms)}</div></div>
+            <div class="metric"><div class="label">P95</div><div class="value">${fmtMs(d.propagation.p95_ms)}</div></div>
+          </div>
+        </div>` : ''}
+        ${d.analysis ? `<div class="insight">${d.analysis}</div>` : ''}
+      `,
+
+      reorg_analysis: (d) => `
+        <div class="section">
+          <div class="section-title">Reorg Analysis · Slot ${d.slot?.toLocaleString() || '?'}</div>
+          <div class="metric-grid">
+            <div class="metric"><div class="label">Slot</div><div class="value accent">${d.slot?.toLocaleString() || '-'}</div></div>
+            <div class="metric"><div class="label">Depth</div><div class="value warning">${d.depth || '-'}</div></div>
+            <div class="metric"><div class="label">Orphaned Blocks</div><div class="value">${d.orphanedBlocks || '-'}</div></div>
+            <div class="metric"><div class="label">Duration</div><div class="value">${fmtMs(d.duration_ms)}</div></div>
+          </div>
+        </div>
+        ${d.blocks?.length ? `<div class="section">
+          <div class="section-title">Affected Blocks</div>
+          <div class="geo-grid">
+            ${d.blocks.map(b => `<div class="geo-item">
+              <span class="country">Slot ${b.slot}</span>
+              <span class="data"><span class="nodes">${b.status || 'orphaned'}</span></span>
+            </div>`).join('')}
+          </div>
+        </div>` : ''}
+        ${d.cause ? `<div class="insight">${d.cause}</div>` : ''}
+        ${d.analysis ? `<div class="insight">${d.analysis}</div>` : ''}
       `
     };
 
@@ -629,8 +533,11 @@
       document.getElementById('result-json').classList.toggle('visible', mode === 'json');
     }
 
-    function toggleSlotInput() {
-      document.getElementById('slot-input').classList.toggle('visible', document.getElementById('query-type').value === 'slot_analysis');
+    function toggleQueryInput() {
+      const type = document.getElementById('query-type').value;
+      const input = document.getElementById('query-input');
+      input.classList.add('visible');
+      input.placeholder = type === 'slot_analysis' ? 'Slot #' : 'Slot # (reorg start)';
     }
 
     async function connect() {
@@ -681,8 +588,8 @@
         fmtDiv.innerHTML = '<div style="color:var(--muted);text-align:center;padding:20px">Fetching data...</div>';
 
         const body = {type};
-        const slot = document.getElementById('slot-input').value;
-        if (type === 'slot_analysis' && slot) body.query = slot;
+        const query = document.getElementById('query-input').value;
+        if (query) body.query = query;
 
         const res = await fetch(`${API}/v1/query`, {
           method: 'POST',
