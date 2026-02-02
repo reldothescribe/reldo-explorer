@@ -468,27 +468,53 @@
     let provider, signer, userAddress, currentFilter = '', viewMode = 'formatted';
 
     const formatters = {
-      slot_analysis: (d) => `
-        <div class="section">
-          <div class="section-title">Slot ${d.slot?.toLocaleString() || '?'}</div>
-          <div class="metric-grid">
-            <div class="metric"><div class="label">Slot</div><div class="value accent">${d.slot?.toLocaleString() || '-'}</div></div>
-            <div class="metric"><div class="label">Block Arrivals</div><div class="value">${d.blockArrivals || '-'}</div></div>
-            <div class="metric"><div class="label">Attestations</div><div class="value">${d.attestations?.toLocaleString() || '-'}</div></div>
-            <div class="metric"><div class="label">Blobs</div><div class="value">${d.blobSidecars || '-'}</div></div>
-            <div class="metric"><div class="label">First Seen</div><div class="value">${fmtMs(d.firstSeen_ms)}</div></div>
+      slot_analysis: (d) => {
+        const agg = d.aggregates || {};
+        const cdf = agg.cdf || {};
+        const mev = d.mev || {};
+        const analysis = d.analysis || {};
+        
+        return `
+          <div class="section">
+            <div class="section-title">Slot ${d.slot?.toLocaleString() || '?'} · ${d.network || 'mainnet'} · Epoch ${d.epoch?.toLocaleString() || '-'}</div>
+            <div class="metric-grid">
+              <div class="metric"><div class="label">Slot</div><div class="value accent">${d.slot?.toLocaleString() || '-'}</div></div>
+              <div class="metric"><div class="label">Health</div><div class="value ${analysis.health === 'healthy' ? 'accent' : 'warning'}">${analysis.health || '-'}</div></div>
+              <div class="metric"><div class="label">Observers</div><div class="value">${agg.unique_observers || '-'}</div></div>
+              <div class="metric"><div class="label">Total Observed</div><div class="value">${agg.total_observed?.toLocaleString() || '-'}</div></div>
+              <div class="metric"><div class="label">First Seen</div><div class="value">${fmtMs(agg.first_seen_ms)}</div></div>
+              <div class="metric"><div class="label">Timing</div><div class="value">${agg.timing_vs_expected || '-'}</div></div>
+            </div>
           </div>
-        </div>
-        ${d.propagation ? `<div class="section">
-          <div class="section-title">Propagation</div>
-          <div class="metric-grid">
-            <div class="metric"><div class="label">Avg</div><div class="value accent">${fmtMs(d.propagation.avg_ms)}</div></div>
-            <div class="metric"><div class="label">P50</div><div class="value">${fmtMs(d.propagation.p50_ms)}</div></div>
-            <div class="metric"><div class="label">P95</div><div class="value">${fmtMs(d.propagation.p95_ms)}</div></div>
-          </div>
-        </div>` : ''}
-        ${d.analysis ? `<div class="insight">${d.analysis}</div>` : ''}
-      `,
+          ${Object.keys(cdf).length ? `<div class="section">
+            <div class="section-title">Propagation CDF</div>
+            <div class="metric-grid">
+              <div class="metric"><div class="label">P50</div><div class="value accent">${fmtMs(cdf.p50_ms)}</div></div>
+              <div class="metric"><div class="label">P95</div><div class="value">${fmtMs(cdf.p95_ms)}</div></div>
+              <div class="metric"><div class="label">Max</div><div class="value warning">${fmtMs(cdf.max_ms)}</div></div>
+            </div>
+          </div>` : ''}
+          ${mev.is_mev_block ? `<div class="section">
+            <div class="section-title">MEV Block</div>
+            <div class="metric-grid">
+              <div class="metric"><div class="label">Relay</div><div class="value accent">${mev.relay || '-'}</div></div>
+              <div class="metric"><div class="label">Value (ETH)</div><div class="value accent">${mev.value_eth?.toFixed(4) || '-'}</div></div>
+              <div class="metric"><div class="label">Value (USD)</div><div class="value">$${mev.value_usd_approx?.toLocaleString() || '-'}</div></div>
+              <div class="metric"><div class="label">Gas Used</div><div class="value">${mev.gas_used?.toLocaleString() || '-'}</div></div>
+              <div class="metric"><div class="label">Gas Limit</div><div class="value">${mev.gas_limit?.toLocaleString() || '-'}</div></div>
+            </div>
+            <div class="metric-grid" style="margin-top:10px">
+              <div class="metric"><div class="label">Fee Recipient</div><div class="value" style="font-size:11px">${mev.fee_recipient ? mev.fee_recipient.slice(0,10)+'...' : '-'}</div></div>
+              <div class="metric"><div class="label">Block Hash</div><div class="value" style="font-size:11px">${mev.block_hash ? mev.block_hash.slice(0,10)+'...' : '-'}</div></div>
+            </div>
+          </div>` : ''}
+          ${analysis.insights?.length ? `<div class="section">
+            <div class="section-title">Insights</div>
+            ${analysis.insights.map(i => `<div class="insight">${i}</div>`).join('')}
+          </div>` : ''}
+          ${d.block_propagation_error ? `<div class="insight warning" style="font-size:10px">Propagation data unavailable</div>` : ''}
+        `;
+      },
 
       reorg_analysis: (d) => `
         <div class="section">
