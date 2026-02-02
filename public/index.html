@@ -3,289 +3,386 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reldo Query Explorer</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>">
+  <title>Reldo x402 Explorer</title>
+  <meta name="description" content="Pay-per-query Ethereum data API. $0.01 USDC on Base.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
   <style>
     :root {
-      --bg: #0a0a0b;
-      --card: #141416;
-      --border: #27272a;
-      --text: #fafafa;
-      --muted: #71717a;
-      --accent: #3b82f6;
-      --green: #22c55e;
-      --red: #ef4444;
+      --bg: #0a0a0a;
+      --surface: #0f0f0f;
+      --surface-hover: #161616;
+      --text: #e8e8e8;
+      --dim: #666;
+      --muted: #444;
+      --accent: #00ff88;
+      --accent-dim: #00aa5a;
+      --border: #1a1a1a;
+      --red: #ff4444;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'Space Mono', monospace;
       background: var(--bg);
       color: var(--text);
-      line-height: 1.6;
       min-height: 100vh;
     }
-    .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    .noise {
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 48px 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
     header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      padding-bottom: 1rem;
+      align-items: flex-start;
+      margin-bottom: 48px;
+      padding-bottom: 24px;
       border-bottom: 1px solid var(--border);
     }
-    .logo { display: flex; align-items: center; gap: 0.75rem; }
-    .logo span { font-size: 2rem; }
-    .logo h1 { font-size: 1.5rem; font-weight: 600; }
-    .links { display: flex; align-items: center; gap: 1rem; }
-    .links a {
-      color: var(--muted);
-      text-decoration: none;
-      font-size: 0.9rem;
+    .brand h1 {
+      font-family: 'Instrument Serif', serif;
+      font-size: 2rem;
+      font-weight: 400;
+      margin-bottom: 4px;
     }
-    .links a:hover { color: var(--text); }
-    
+    .brand h1 span { color: var(--accent); font-style: italic; }
+    .brand .tagline {
+      font-size: 11px;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+    .nav-links {
+      display: flex;
+      gap: 16px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .nav-links a {
+      color: var(--dim);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
     /* Query Section */
     .query-section {
-      background: var(--card);
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
+      padding: 24px;
+      margin-bottom: 32px;
     }
     .query-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1rem;
+      margin-bottom: 20px;
     }
     .query-header h2 {
-      font-size: 1.1rem;
-      font-weight: 600;
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.5rem;
+      font-weight: 400;
+      font-style: italic;
     }
-    .connect-btn, .ask-btn {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 0.6rem 1.2rem;
-      border-radius: 6px;
+    .connect-btn {
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 8px 16px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
       cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: 500;
+      transition: all 0.15s;
     }
-    .connect-btn:hover, .ask-btn:hover {
-      opacity: 0.9;
-    }
-    .connect-btn:disabled, .ask-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+    .connect-btn:hover {
+      background: var(--accent);
+      color: var(--bg);
     }
     .connect-btn.connected {
-      background: var(--green);
+      background: var(--accent);
+      color: var(--bg);
     }
     .query-form {
-      display: flex;
-      gap: 1rem;
-      align-items: flex-end;
-      flex-wrap: wrap;
-    }
-    .form-group {
-      flex: 1;
-      min-width: 200px;
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 16px;
+      align-items: end;
     }
     .form-group label {
       display: block;
-      font-size: 0.85rem;
-      color: var(--muted);
-      margin-bottom: 0.5rem;
+      font-size: 10px;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
     }
-    .form-group select {
+    .form-group select, .form-group input {
       width: 100%;
-      padding: 0.75rem;
+      padding: 12px;
       background: var(--bg);
       border: 1px solid var(--border);
-      border-radius: 6px;
       color: var(--text);
-      font-size: 0.9rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+    }
+    .form-group select:focus, .form-group input:focus {
+      outline: none;
+      border-color: var(--accent-dim);
     }
     .price-tag {
-      background: rgba(34, 197, 94, 0.15);
-      color: var(--green);
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      font-weight: 500;
+      padding: 12px 20px;
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid var(--accent-dim);
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .ask-btn {
+      background: var(--accent);
+      border: none;
+      color: var(--bg);
+      padding: 12px 24px;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .ask-btn:hover { opacity: 0.9; }
+    .ask-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .query-info {
+      margin-top: 16px;
+      font-size: 11px;
+      color: var(--dim);
+    }
+    .network-warning {
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: rgba(255, 68, 68, 0.1);
+      border: 1px solid rgba(255, 68, 68, 0.3);
+      color: var(--red);
+      font-size: 12px;
+      display: none;
+    }
+    .network-warning.visible { display: flex; align-items: center; justify-content: space-between; }
+    .network-warning button {
+      background: var(--red);
+      border: none;
+      color: white;
+      padding: 4px 12px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      cursor: pointer;
     }
     .result-box {
-      margin-top: 1rem;
-      padding: 1rem;
+      margin-top: 20px;
+      padding: 16px;
       background: var(--bg);
-      border-radius: 8px;
+      border: 1px solid var(--border);
       display: none;
     }
     .result-box.visible { display: block; }
-    .result-box.error { border: 1px solid var(--red); }
-    .result-box.success { border: 1px solid var(--green); }
+    .result-box.error { border-color: var(--red); }
+    .result-box.success { border-color: var(--accent); }
+    .result-label {
+      font-size: 9px;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 8px;
+    }
     .result-box pre {
-      font-family: 'SF Mono', Monaco, monospace;
-      font-size: 0.8rem;
+      font-size: 11px;
+      line-height: 1.5;
       white-space: pre-wrap;
       word-break: break-word;
+      color: var(--text);
     }
-    .result-label {
-      font-size: 0.75rem;
-      color: var(--muted);
-      margin-bottom: 0.5rem;
-      text-transform: uppercase;
-    }
-    .wallet-info {
-      font-family: 'SF Mono', Monaco, monospace;
-      font-size: 0.8rem;
-      color: var(--muted);
-    }
-    .network-warning {
-      background: rgba(234, 179, 8, 0.15);
-      color: #eab308;
-      padding: 0.75rem 1rem;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      margin-top: 1rem;
-      display: none;
-    }
-    .network-warning.visible { display: block; }
 
     /* Stats */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
     }
     .stat-card {
-      background: var(--card);
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1.25rem;
+      padding: 20px;
     }
-    .stat-card .label { color: var(--muted); font-size: 0.85rem; margin-bottom: 0.25rem; }
-    .stat-card .value { font-size: 1.75rem; font-weight: 600; }
-    .stat-card .value.green { color: var(--green); }
+    .stat-card .label {
+      font-size: 10px;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+    .stat-card .value {
+      font-size: 24px;
+      font-weight: 700;
+    }
+    .stat-card .value.accent { color: var(--accent); }
 
-    /* Filters & Table */
+    /* Filters */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .section-header h3 {
+      font-size: 10px;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
     .filters {
       display: flex;
-      gap: 0.75rem;
-      margin-bottom: 1rem;
-      flex-wrap: wrap;
+      gap: 8px;
     }
     .filter-btn {
-      background: var(--card);
+      background: transparent;
       border: 1px solid var(--border);
-      color: var(--text);
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
+      color: var(--dim);
+      padding: 6px 12px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       cursor: pointer;
-      font-size: 0.85rem;
+      transition: all 0.15s;
     }
     .filter-btn:hover, .filter-btn.active {
-      border-color: var(--accent);
+      border-color: var(--accent-dim);
       color: var(--accent);
     }
+
+    /* Table */
     .queries-table {
-      background: var(--card);
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
+      overflow-x: auto;
     }
     table { width: 100%; border-collapse: collapse; }
     th {
       text-align: left;
-      padding: 1rem;
-      background: rgba(255,255,255,0.02);
-      font-weight: 500;
-      font-size: 0.85rem;
-      color: var(--muted);
+      padding: 16px;
+      font-size: 10px;
+      font-weight: 400;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
       border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
     }
     td {
-      padding: 1rem;
+      padding: 16px;
+      font-size: 12px;
       border-bottom: 1px solid var(--border);
-      font-size: 0.9rem;
     }
     tr:last-child td { border-bottom: none; }
     tr:hover { background: rgba(255,255,255,0.02); }
     .type-badge {
       display: inline-block;
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      font-weight: 500;
-      background: rgba(59, 130, 246, 0.15);
-      color: var(--accent);
+      padding: 4px 8px;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border: 1px solid;
     }
-    .type-badge.gas { background: rgba(234, 179, 8, 0.15); color: #eab308; }
-    .type-badge.block { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
-    .type-badge.network { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
-    .type-badge.validators { background: rgba(236, 72, 153, 0.15); color: #ec4899; }
-    .type-badge.mev { background: rgba(249, 115, 22, 0.15); color: #f97316; }
-    .type-badge.slot_analysis { background: rgba(6, 182, 212, 0.15); color: #06b6d4; }
-    .address {
-      font-family: 'SF Mono', Monaco, monospace;
-      font-size: 0.8rem;
-      color: var(--muted);
-    }
+    .type-badge.gas { border-color: #eab308; color: #eab308; }
+    .type-badge.block { border-color: #a855f7; color: #a855f7; }
+    .type-badge.network { border-color: var(--accent); color: var(--accent); }
+    .type-badge.validators { border-color: #ec4899; color: #ec4899; }
+    .type-badge.mev { border-color: #f97316; color: #f97316; }
+    .type-badge.slot_analysis { border-color: #06b6d4; color: #06b6d4; }
+    .address { color: var(--dim); }
     .address a { color: var(--accent); text-decoration: none; }
     .address a:hover { text-decoration: underline; }
-    .amount { color: var(--green); font-weight: 500; }
-    .timestamp { color: var(--muted); font-size: 0.85rem; }
+    .amount { color: var(--accent); font-weight: 700; }
+    .timestamp { color: var(--dim); }
     .response-preview {
-      max-width: 300px;
+      max-width: 280px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      color: var(--muted);
-      font-size: 0.8rem;
+      color: var(--dim);
+      font-size: 11px;
       cursor: pointer;
     }
-    .response-preview:hover {
-      color: var(--accent);
+    .response-preview:hover { color: var(--text); }
+    .empty, .loading {
+      text-align: center;
+      padding: 48px;
+      color: var(--dim);
+      font-size: 12px;
     }
-    .loading { text-align: center; padding: 3rem; color: var(--muted); }
-    .empty { text-align: center; padding: 3rem; color: var(--muted); }
+
+    /* Footer */
+    footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--muted);
+    }
+    footer a { color: var(--dim); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
 
     @media (max-width: 768px) {
-      .container { padding: 1rem; }
-      header { flex-direction: column; gap: 1rem; text-align: center; }
-      .query-form { flex-direction: column; }
-      .form-group { width: 100%; }
-      table { font-size: 0.8rem; }
-      th, td { padding: 0.75rem 0.5rem; }
-      .response-preview { max-width: 150px; }
+      .container { padding: 24px 16px; }
+      header { flex-direction: column; gap: 16px; }
+      .query-form { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .filters { flex-wrap: wrap; }
+      th, td { padding: 12px 8px; }
+      .response-preview { max-width: 120px; }
     }
   </style>
 </head>
 <body>
+  <div class="noise"></div>
   <div class="container">
     <header>
-      <div class="logo">
-        <span>🔮</span>
-        <h1>Reldo Query Explorer</h1>
+      <div class="brand">
+        <h1>x402 Explorer<span>.</span></h1>
+        <p class="tagline">Pay-per-query Ethereum Data</p>
       </div>
-      <div class="links">
-        <a href="https://reldo-x402-api.reldo.workers.dev/health" target="_blank">API</a>
-        <a href="https://reldo-x402-api.reldo.workers.dev/.well-known/agent-card.json" target="_blank">Agent Card</a>
-        <a href="https://x.com/ReldoTheScribe" target="_blank">Twitter</a>
-        <a href="https://basescan.org/address/0x62E6D3914c8e211dc27A27080B6eCf283979D60d" target="_blank">Wallet</a>
-      </div>
+      <nav class="nav-links">
+        <a href="https://reldothescribe.github.io">Research</a>
+        <a href="https://x.com/ReldoTheScribe">Twitter</a>
+        <a href="https://github.com/reldothescribe">GitHub</a>
+        <a href="https://basescan.org/address/0x62E6D3914c8e211dc27A27080B6eCf283979D60d">Wallet</a>
+      </nav>
     </header>
 
-    <!-- Query Interface -->
     <div class="query-section">
       <div class="query-header">
-        <h2>Ask Reldo</h2>
+        <h2>Query</h2>
         <button class="connect-btn" id="connect-btn">Connect Wallet</button>
       </div>
-      <div class="wallet-info" id="wallet-info"></div>
       
       <div class="query-form">
         <div class="form-group">
@@ -295,28 +392,30 @@
             <option value="block">Latest Block</option>
             <option value="network">Network Health</option>
             <option value="validators">Validator Stats</option>
-            <option value="mev">MEV/Builder Stats</option>
+            <option value="mev">MEV / Builders</option>
             <option value="slot_analysis">Slot Analysis</option>
           </select>
         </div>
-        <div class="form-group" id="query-input-group" style="display: none;">
-          <label id="query-input-label">Slot Number</label>
-          <input type="text" id="query-input" placeholder="e.g. 13600000" style="width: 100%; padding: 0.75rem; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 0.9rem;">
-        </div>
-        <div class="price-tag">$0.01 USDC</div>
-        <button class="ask-btn" id="ask-btn" disabled>Ask (Pay & Query)</button>
+        <div class="price-tag">$0.01</div>
+        <button class="ask-btn" id="ask-btn" disabled>Execute</button>
       </div>
-      <div class="query-info" style="margin-top: 0.75rem; font-size: 0.8rem; color: var(--muted);">
-        <span id="query-description">Current gas fees and utilization from xatu network data</span>
+      
+      <div class="form-group" id="query-input-group" style="display: none; margin-top: 16px;">
+        <label id="query-input-label">Slot Number</label>
+        <input type="text" id="query-input" placeholder="e.g. 13600000">
+      </div>
+
+      <div class="query-info">
+        <span id="query-description">Base fee stats and gas utilization from xatu network data</span>
       </div>
 
       <div class="network-warning" id="network-warning">
-        Please switch to Base network to make queries.
-        <button onclick="switchToBase()" style="margin-left: 1rem; padding: 0.25rem 0.5rem; cursor: pointer;">Switch Network</button>
+        <span>Switch to Base network to make queries</span>
+        <button onclick="switchToBase()">Switch</button>
       </div>
 
       <div class="result-box" id="result-box">
-        <div class="result-label">Result</div>
+        <div class="result-label">Response</div>
         <pre id="result-content"></pre>
       </div>
     </div>
@@ -327,27 +426,29 @@
         <div class="value" id="total-queries">-</div>
       </div>
       <div class="stat-card">
-        <div class="label">Last 24 Hours</div>
+        <div class="label">Last 24h</div>
         <div class="value" id="queries-24h">-</div>
       </div>
       <div class="stat-card">
-        <div class="label">Total Earned</div>
-        <div class="value green" id="total-earned">-</div>
+        <div class="label">Earned</div>
+        <div class="value accent" id="total-earned">-</div>
       </div>
       <div class="stat-card">
-        <div class="label">EIP-8004 Token</div>
+        <div class="label">Agent ID</div>
         <div class="value">#22793</div>
       </div>
     </div>
 
-    <div class="filters">
-      <button class="filter-btn active" data-type="">All</button>
-      <button class="filter-btn" data-type="gas">Gas</button>
-      <button class="filter-btn" data-type="block">Block</button>
-      <button class="filter-btn" data-type="network">Network</button>
-      <button class="filter-btn" data-type="validators">Validators</button>
-      <button class="filter-btn" data-type="mev">MEV</button>
-      <button class="filter-btn" data-type="slot_analysis">Slot</button>
+    <div class="section-header">
+      <h3>Query Log</h3>
+      <div class="filters">
+        <button class="filter-btn active" data-type="">All</button>
+        <button class="filter-btn" data-type="gas">Gas</button>
+        <button class="filter-btn" data-type="block">Block</button>
+        <button class="filter-btn" data-type="network">Network</button>
+        <button class="filter-btn" data-type="validators">Validators</button>
+        <button class="filter-btn" data-type="mev">MEV</button>
+      </div>
     </div>
 
     <div class="queries-table">
@@ -362,10 +463,15 @@
           </tr>
         </thead>
         <tbody id="queries-body">
-          <tr><td colspan="5" class="loading">Loading queries...</td></tr>
+          <tr><td colspan="5" class="loading">Loading...</td></tr>
         </tbody>
       </table>
     </div>
+
+    <footer>
+      <span>Base mainnet · USDC payments</span>
+      <a href="https://reldo-x402-api.reldo.workers.dev/">API</a>
+    </footer>
   </div>
 
   <script>
@@ -373,47 +479,39 @@
     const RELDO_ADDRESS = '0x62E6D3914c8e211dc27A27080B6eCf283979D60d';
     const USDC_BASE = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
     const BASE_CHAIN_ID = 8453;
-    const PAYMENT_AMOUNT = '10000'; // $0.01 = 10000 (6 decimals)
+    const PAYMENT_AMOUNT = '10000';
 
     let provider = null;
     let signer = null;
     let userAddress = null;
     let currentType = '';
 
-    // Wallet Connection
     async function connectWallet() {
       if (!window.ethereum) {
-        alert('Please install a wallet like MetaMask or Rabby');
+        alert('Install MetaMask or Rabby');
         return;
       }
-
       try {
         provider = new ethers.BrowserProvider(window.ethereum);
         const accounts = await provider.send('eth_requestAccounts', []);
         userAddress = accounts[0];
         signer = await provider.getSigner();
-
         const network = await provider.getNetwork();
         updateWalletUI(network.chainId);
-
-        // Listen for network changes
         window.ethereum.on('chainChanged', () => window.location.reload());
         window.ethereum.on('accountsChanged', () => window.location.reload());
       } catch (e) {
         console.error('Connection failed:', e);
-        alert('Failed to connect wallet');
       }
     }
 
     function updateWalletUI(chainId) {
       const connectBtn = document.getElementById('connect-btn');
       const askBtn = document.getElementById('ask-btn');
-      const walletInfo = document.getElementById('wallet-info');
       const networkWarning = document.getElementById('network-warning');
 
       connectBtn.textContent = userAddress.slice(0, 6) + '...' + userAddress.slice(-4);
       connectBtn.classList.add('connected');
-      walletInfo.textContent = `Connected: ${userAddress}`;
 
       if (BigInt(chainId) !== BigInt(BASE_CHAIN_ID)) {
         networkWarning.classList.add('visible');
@@ -446,10 +544,9 @@
       }
     }
 
-    // EIP-3009 transferWithAuthorization signing
     async function signPaymentAuthorization() {
       const validAfter = 0;
-      const validBefore = Math.floor(Date.now() / 1000) + 3600; // 1 hour
+      const validBefore = Math.floor(Date.now() / 1000) + 3600;
       const nonce = ethers.hexlify(ethers.randomBytes(32));
 
       const domain = {
@@ -502,36 +599,28 @@
 
       askBtn.disabled = true;
       askBtn.textContent = 'Signing...';
-      resultBox.className = 'result-box';
-      resultBox.classList.add('visible');
+      resultBox.className = 'result-box visible';
       resultContent.textContent = 'Waiting for signature...';
 
       try {
-        // Sign the payment authorization
         const { signature, authorization } = await signPaymentAuthorization();
         
         askBtn.textContent = 'Querying...';
-        resultContent.textContent = 'Payment signed. Sending query...';
+        resultContent.textContent = 'Payment signed. Querying...';
 
-        // Build x402 payment payload
         const paymentPayload = {
           x402Version: 1,
           scheme: 'exact',
           network: 'base-mainnet',
-          payload: {
-            signature,
-            authorization
-          }
+          payload: { signature, authorization }
         };
 
-        // Build request body
         const requestBody = { type: queryType };
         const queryInput = document.getElementById('query-input').value;
         if (queryTypeInfo[queryType].needsInput && queryInput) {
           requestBody.query = queryInput;
         }
 
-        // Send to API
         const response = await fetch(`${API_BASE}/v1/query`, {
           method: 'POST',
           headers: {
@@ -557,18 +646,17 @@
         resultContent.textContent = 'Error: ' + (e.message || e);
       } finally {
         askBtn.disabled = false;
-        askBtn.textContent = 'Ask (Pay & Query)';
+        askBtn.textContent = 'Execute';
       }
     }
 
-    // Query type descriptions and input requirements
     const queryTypeInfo = {
-      gas: { description: 'Base fee stats and gas utilization from xatu network data', needsInput: false },
-      block: { description: 'Latest block with propagation timing across nodes', needsInput: false },
-      network: { description: 'Network health: propagation percentiles, client distribution', needsInput: false },
-      validators: { description: 'Attestation correctness, inclusion distance from xatu', needsInput: false },
-      mev: { description: 'Fee recipient/builder distribution from recent blocks', needsInput: false },
-      slot_analysis: { description: 'Deep analysis of a specific slot: arrivals, attestations, blobs', needsInput: true, inputLabel: 'Slot Number', placeholder: 'e.g. 13600000' }
+      gas: { description: 'Base fee stats and gas utilization from xatu', needsInput: false },
+      block: { description: 'Latest block with propagation timing', needsInput: false },
+      network: { description: 'Network health: propagation, clients, geography', needsInput: false },
+      validators: { description: 'Attestation correctness and inclusion distance', needsInput: false },
+      mev: { description: 'Fee recipient / builder distribution', needsInput: false },
+      slot_analysis: { description: 'Deep slot analysis: arrivals, attestations, blobs', needsInput: true, inputLabel: 'Slot Number', placeholder: 'e.g. 13600000' }
     };
 
     function toggleQueryInput() {
@@ -590,18 +678,16 @@
       }
     }
 
-    // Event listeners
     document.getElementById('connect-btn').addEventListener('click', connectWallet);
     document.getElementById('ask-btn').addEventListener('click', askReldo);
 
-    // Explorer functions
     function formatTime(isoString) {
       const date = new Date(isoString);
       const now = new Date();
       const diff = now - date;
-      if (diff < 60000) return 'Just now';
-      if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
-      if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+      if (diff < 60000) return 'now';
+      if (diff < 3600000) return Math.floor(diff / 60000) + 'm';
+      if (diff < 86400000) return Math.floor(diff / 3600000) + 'h';
       return date.toLocaleDateString();
     }
 
@@ -619,9 +705,7 @@
           document.getElementById('queries-24h').textContent = data.stats.queriesLast24h;
           document.getElementById('total-earned').textContent = data.stats.totalEarnings;
         }
-      } catch (e) {
-        console.error('Failed to load stats:', e);
-      }
+      } catch (e) {}
     }
 
     async function loadQueries(type = '') {
@@ -634,37 +718,12 @@
         const data = await res.json();
 
         if (!data.success || !data.logs.length) {
-          tbody.innerHTML = '<tr><td colspan="5" class="empty">No queries yet. Be the first!</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="5" class="empty">No queries yet</td></tr>';
           return;
         }
 
         tbody.innerHTML = data.logs.map(q => {
-          // Format response nicely based on xatu data
-          let responseDisplay = '-';
-          if (q.response_summary) {
-            try {
-              const parsed = JSON.parse(q.response_summary);
-              if (parsed.baseFee?.current_gwei) {
-                responseDisplay = `Gas: ${parsed.baseFee.current_gwei} gwei`;
-              } else if (parsed.slot && parsed.blockNumber) {
-                responseDisplay = `Slot ${parsed.slot} / Block #${parsed.blockNumber}`;
-              } else if (parsed.slot && parsed.status) {
-                responseDisplay = `Slot ${parsed.slot}: ${parsed.status}`;
-              } else if (parsed.blocks?.observed) {
-                responseDisplay = `${parsed.blocks.observed} blocks, p50: ${parsed.blocks.p50_ms}ms`;
-              } else if (parsed.attestations?.total) {
-                responseDisplay = `${parsed.attestations.total} attestations`;
-              } else if (parsed.topFeeRecipients) {
-                responseDisplay = `${parsed.totalBuilders} builders`;
-              } else if (parsed.block_arrival?.first_seen_ms) {
-                responseDisplay = `First seen: ${parsed.block_arrival.first_seen_ms}ms`;
-              } else {
-                responseDisplay = q.response_summary.slice(0, 50) + '...';
-              }
-            } catch {
-              responseDisplay = q.response_summary.slice(0, 50) + '...';
-            }
-          }
+          let preview = q.response_summary?.slice(0, 60) + '...' || '-';
           return `
           <tr>
             <td class="timestamp">${formatTime(q.timestamp)}</td>
@@ -673,15 +732,14 @@
               ${q.client_address ? `<a href="https://basescan.org/address/${q.client_address}" target="_blank">${truncateAddress(q.client_address)}</a>` : '-'}
             </td>
             <td class="amount">${q.amount_usdc ? '$' + parseFloat(q.amount_usdc).toFixed(2) : '-'}</td>
-            <td class="response-preview" title="${(q.response_summary || '').replace(/"/g, '&quot;')}" onclick="alert('${(q.response_summary || '-').replace(/'/g, "\\'").replace(/\n/g, ' ')}')">${responseDisplay}</td>
+            <td class="response-preview" title="${(q.response_summary || '').replace(/"/g, '&quot;')}">${preview}</td>
           </tr>
         `}).join('');
       } catch (e) {
-        tbody.innerHTML = '<tr><td colspan="5" class="empty">Failed to load queries</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="empty">Failed to load</td></tr>';
       }
     }
 
-    // Filter buttons
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -691,18 +749,11 @@
       });
     });
 
-    // Initial load
     loadStats();
     loadQueries();
-    setInterval(() => {
-      loadStats();
-      loadQueries(currentType);
-    }, 30000);
+    setInterval(() => { loadStats(); loadQueries(currentType); }, 30000);
 
-    // Auto-connect if already connected
-    if (window.ethereum?.selectedAddress) {
-      connectWallet();
-    }
+    if (window.ethereum?.selectedAddress) connectWallet();
   </script>
 </body>
 </html>
