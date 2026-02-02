@@ -1087,7 +1087,9 @@
         container.innerHTML = data.logs.map((q, idx) => {
           let responseData = {};
           try {
-            responseData = JSON.parse(q.response_summary || '{}');
+            const rawResponse = q.full_response || q.response_summary || '{}';
+            const parsed = JSON.parse(rawResponse);
+            responseData = parsed.result || parsed;
           } catch (e) {}
           
           const previewText = getPreviewText(q.query_type, responseData);
