@@ -228,6 +228,7 @@
     .type-badge.network { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
     .type-badge.validators { background: rgba(236, 72, 153, 0.15); color: #ec4899; }
     .type-badge.mev { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+    .type-badge.slot_analysis { background: rgba(6, 182, 212, 0.15); color: #06b6d4; }
     .address {
       font-family: 'SF Mono', Monaco, monospace;
       font-size: 0.8rem;
@@ -289,16 +290,24 @@
       <div class="query-form">
         <div class="form-group">
           <label>Query Type</label>
-          <select id="query-type">
-            <option value="gas">Gas Price</option>
+          <select id="query-type" onchange="toggleQueryInput()">
+            <option value="gas">Gas Analysis</option>
             <option value="block">Latest Block</option>
-            <option value="network">Network Status</option>
+            <option value="network">Network Health</option>
             <option value="validators">Validator Stats</option>
-            <option value="mev">MEV Activity</option>
+            <option value="mev">MEV/Builder Stats</option>
+            <option value="slot_analysis">Slot Analysis</option>
           </select>
+        </div>
+        <div class="form-group" id="query-input-group" style="display: none;">
+          <label id="query-input-label">Slot Number</label>
+          <input type="text" id="query-input" placeholder="e.g. 13600000" style="width: 100%; padding: 0.75rem; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 0.9rem;">
         </div>
         <div class="price-tag">$0.01 USDC</div>
         <button class="ask-btn" id="ask-btn" disabled>Ask (Pay & Query)</button>
+      </div>
+      <div class="query-info" style="margin-top: 0.75rem; font-size: 0.8rem; color: var(--muted);">
+        <span id="query-description">Current gas fees and utilization from xatu network data</span>
       </div>
 
       <div class="network-warning" id="network-warning">
@@ -338,6 +347,7 @@
       <button class="filter-btn" data-type="network">Network</button>
       <button class="filter-btn" data-type="validators">Validators</button>
       <button class="filter-btn" data-type="mev">MEV</button>
+      <button class="filter-btn" data-type="slot_analysis">Slot</button>
     </div>
 
     <div class="queries-table">
@@ -514,6 +524,13 @@
           }
         };
 
+        // Build request body
+        const requestBody = { type: queryType };
+        const queryInput = document.getElementById('query-input').value;
+        if (queryTypeInfo[queryType].needsInput && queryInput) {
+          requestBody.query = queryInput;
+        }
+
         // Send to API
         const response = await fetch(`${API_BASE}/v1/query`, {
           method: 'POST',
@@ -521,7 +538,7 @@
             'Content-Type': 'application/json',
             'X-Payment': btoa(JSON.stringify(paymentPayload))
           },
-          body: JSON.stringify({ type: queryType })
+          body: JSON.stringify(requestBody)
         });
 
         const data = await response.json();
@@ -541,6 +558,35 @@
       } finally {
         askBtn.disabled = false;
         askBtn.textContent = 'Ask (Pay & Query)';
+      }
+    }
+
+    // Query type descriptions and input requirements
+    const queryTypeInfo = {
+      gas: { description: 'Base fee stats and gas utilization from xatu network data', needsInput: false },
+      block: { description: 'Latest block with propagation timing across nodes', needsInput: false },
+      network: { description: 'Network health: propagation percentiles, client distribution', needsInput: false },
+      validators: { description: 'Attestation correctness, inclusion distance from xatu', needsInput: false },
+      mev: { description: 'Fee recipient/builder distribution from recent blocks', needsInput: false },
+      slot_analysis: { description: 'Deep analysis of a specific slot: arrivals, attestations, blobs', needsInput: true, inputLabel: 'Slot Number', placeholder: 'e.g. 13600000' }
+    };
+
+    function toggleQueryInput() {
+      const queryType = document.getElementById('query-type').value;
+      const inputGroup = document.getElementById('query-input-group');
+      const inputLabel = document.getElementById('query-input-label');
+      const queryInput = document.getElementById('query-input');
+      const description = document.getElementById('query-description');
+      const info = queryTypeInfo[queryType];
+
+      description.textContent = info.description;
+
+      if (info.needsInput) {
+        inputGroup.style.display = 'block';
+        inputLabel.textContent = info.inputLabel;
+        queryInput.placeholder = info.placeholder;
+      } else {
+        inputGroup.style.display = 'none';
       }
     }
 
@@ -593,17 +639,25 @@
         }
 
         tbody.innerHTML = data.logs.map(q => {
-          // Format response nicely
+          // Format response nicely based on xatu data
           let responseDisplay = '-';
           if (q.response_summary) {
             try {
               const parsed = JSON.parse(q.response_summary);
-              if (parsed.gasPrice) {
-                responseDisplay = `Gas: ${parsed.gasPrice.formatted}`;
-              } else if (parsed.blockNumber) {
-                responseDisplay = `Block #${parsed.blockNumber}`;
-              } else if (parsed.network) {
-                responseDisplay = parsed.network;
+              if (parsed.baseFee?.current_gwei) {
+                responseDisplay = `Gas: ${parsed.baseFee.current_gwei} gwei`;
+              } else if (parsed.slot && parsed.blockNumber) {
+                responseDisplay = `Slot ${parsed.slot} / Block #${parsed.blockNumber}`;
+              } else if (parsed.slot && parsed.status) {
+                responseDisplay = `Slot ${parsed.slot}: ${parsed.status}`;
+              } else if (parsed.blocks?.observed) {
+                responseDisplay = `${parsed.blocks.observed} blocks, p50: ${parsed.blocks.p50_ms}ms`;
+              } else if (parsed.attestations?.total) {
+                responseDisplay = `${parsed.attestations.total} attestations`;
+              } else if (parsed.topFeeRecipients) {
+                responseDisplay = `${parsed.totalBuilders} builders`;
+              } else if (parsed.block_arrival?.first_seen_ms) {
+                responseDisplay = `First seen: ${parsed.block_arrival.first_seen_ms}ms`;
               } else {
                 responseDisplay = q.response_summary.slice(0, 50) + '...';
               }
