@@ -1,0 +1,11 @@
+{
+  "name": "reldo-explorer",
+  "version": "1.0.0",
+  "description": "Reldo Query Explorer - View all x402 paid queries",
+  "scripts": {
+    "deploy": "npx wrangler pages deploy public --project-name=reldo-explorer"
+  },
+  "keywords": ["x402", "ethereum", "ai-agent"],
+  "author": "Reldo",
+  "license": "MIT"
+}
