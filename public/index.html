@@ -865,9 +865,113 @@
       loadQueries(currentFilter);
     }));
 
+    // Hash routing for individual queries
+    async function loadSingleQuery(id) {
+      const list = document.getElementById('query-list');
+      list.innerHTML = '<div class="empty">Loading query #' + id + '...</div>';
+      try {
+        const r = await fetch(`${API}/v1/logs?limit=50`);
+        const d = await r.json();
+        const q = d.logs?.find(l => l.id == id);
+        if (!q) {
+          list.innerHTML = '<div class="empty">Query #' + id + ' not found. <a href="#" style="color:var(--accent)">View all queries</a></div>';
+          return;
+        }
+        let data = {};
+        try { const p = JSON.parse(q.full_response || '{}'); data = p.result || p; } catch(e) {}
+        
+        list.innerHTML = `
+          <div style="margin-bottom:16px">
+            <a href="#" style="color:var(--dim);font-size:12px;text-decoration:none">← Back to all queries</a>
+          </div>
+          <div class="query-card expanded">
+            <div class="query-card-header">
+              <div class="query-card-meta">
+                <span class="type-pill ${q.query_type}">${q.query_type.replace('_',' ')}</span>
+                <span class="timestamp">${fmtTime(q.timestamp)}</span>
+                <span style="color:var(--muted);font-size:11px">Query #${q.id}</span>
+              </div>
+              <div class="query-card-right">
+                <a class="address-link" href="https://basescan.org/address/${q.client_address}" target="_blank">${q.client_address?.slice(0,6)}...${q.client_address?.slice(-4)}</a>
+                <span class="amount-badge">$${parseFloat(q.amount_usdc||0).toFixed(2)}</span>
+              </div>
+            </div>
+            <div class="query-card-body" style="display:block">
+              ${fmt(q.query_type, data)}
+              <details class="json-toggle" open>
+                <summary>Raw JSON Response</summary>
+                <pre class="json-block">${JSON.stringify(data, null, 2)}</pre>
+              </details>
+            </div>
+          </div>
+        `;
+      } catch(e) {
+        list.innerHTML = '<div class="empty">Failed to load query</div>';
+      }
+    }
+
+    function handleRoute() {
+      const hash = window.location.hash;
+      const match = hash.match(/^#\/query\/(\d+)$/);
+      if (match) {
+        loadSingleQuery(match[1]);
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      } else {
+        document.querySelector('.tab[data-type=""]').classList.add('active');
+        loadQueries(currentFilter);
+      }
+    }
+
+    window.addEventListener('hashchange', handleRoute);
+    
+    // Update query cards to include link
+    const origLoadQueries = loadQueries;
+    loadQueries = async function(type = '') {
+      const list = document.getElementById('query-list');
+      list.innerHTML = '<div class="empty">Loading...</div>';
+      try {
+        const url = type ? `${API}/v1/logs?type=${type}&limit=20` : `${API}/v1/logs?limit=20`;
+        const r = await fetch(url);
+        const d = await r.json();
+        if (!d.success || !d.logs.length) {
+          list.innerHTML = '<div class="empty">No queries yet</div>';
+          return;
+        }
+        list.innerHTML = d.logs.map((q, i) => {
+          let data = {};
+          try { const p = JSON.parse(q.full_response || '{}'); data = p.result || p; } catch(e) {}
+          return `
+            <div class="query-card${i === 0 ? ' expanded' : ''}">
+              <div class="query-card-header" onclick="this.parentElement.classList.toggle('expanded')">
+                <div class="query-card-meta">
+                  <span class="type-pill ${q.query_type}">${q.query_type.replace('_',' ')}</span>
+                  <span class="timestamp">${fmtTime(q.timestamp)}</span>
+                </div>
+                <div class="query-card-right">
+                  <a class="address-link" href="https://basescan.org/address/${q.client_address}" target="_blank" onclick="event.stopPropagation()">${q.client_address?.slice(0,6)}...${q.client_address?.slice(-4)}</a>
+                  <span class="amount-badge">$${parseFloat(q.amount_usdc||0).toFixed(2)}</span>
+                  <a href="#/query/${q.id}" onclick="event.stopPropagation()" style="color:var(--muted);font-size:10px;text-decoration:none" title="Permalink">🔗</a>
+                  <span class="expand-icon">▼</span>
+                </div>
+              </div>
+              <div class="query-card-body">
+                ${fmt(q.query_type, data)}
+                <details class="json-toggle">
+                  <summary>View Raw JSON</summary>
+                  <pre class="json-block">${JSON.stringify(data, null, 2)}</pre>
+                </details>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch(e) {
+        list.innerHTML = '<div class="empty">Failed to load</div>';
+      }
+    };
+
     loadStats();
-    loadQueries();
-    setInterval(() => { loadStats(); loadQueries(currentFilter); }, 30000);
+    handleRoute();
+    setInterval(() => { loadStats(); if (!window.location.hash.startsWith('#/query/')) loadQueries(currentFilter); }, 30000);
     if (window.ethereum?.selectedAddress) connect();
   </script>
 </body>
