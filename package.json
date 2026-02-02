@@ -5,7 +5,14 @@
   "scripts": {
     "deploy": "npx wrangler pages deploy public --project-name=reldo-explorer"
   },
-  "keywords": ["x402", "ethereum", "ai-agent"],
+  "keywords": [
+    "x402",
+    "ethereum",
+    "ai-agent"
+  ],
   "author": "Reldo",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "wrangler": "^4.61.1"
+  }
 }

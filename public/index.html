@@ -193,9 +193,10 @@
       font-size: 10px;
       cursor: pointer;
     }
+
+    /* Result Display */
     .result-box {
       margin-top: 20px;
-      padding: 16px;
       background: var(--bg);
       border: 1px solid var(--border);
       display: none;
@@ -203,20 +204,131 @@
     .result-box.visible { display: block; }
     .result-box.error { border-color: var(--red); }
     .result-box.success { border-color: var(--accent); }
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
     .result-label {
       font-size: 9px;
       color: var(--dim);
       text-transform: uppercase;
       letter-spacing: 0.15em;
-      margin-bottom: 8px;
     }
-    .result-box pre {
+    .result-toggle {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--dim);
+      padding: 4px 8px;
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      cursor: pointer;
+    }
+    .result-toggle:hover { color: var(--accent); border-color: var(--accent-dim); }
+    .result-content {
+      padding: 16px;
+    }
+    .result-raw {
       font-size: 11px;
       line-height: 1.5;
       white-space: pre-wrap;
       word-break: break-word;
       color: var(--text);
+      display: none;
+      max-height: 400px;
+      overflow-y: auto;
     }
+    .result-raw.visible { display: block; }
+
+    /* Formatted Response Components */
+    .response-formatted { display: block; }
+    .response-formatted.hidden { display: none; }
+    
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .data-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 16px;
+    }
+    .data-card .card-label {
+      font-size: 9px;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 6px;
+    }
+    .data-card .card-value {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .data-card .card-value.accent { color: var(--accent); }
+    .data-card .card-value.warning { color: #eab308; }
+    .data-card .card-sub {
+      font-size: 10px;
+      color: var(--dim);
+      margin-top: 4px;
+    }
+
+    .data-section {
+      margin-top: 16px;
+    }
+    .data-section:first-child { margin-top: 0; }
+    .data-section-title {
+      font-size: 10px;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .client-bar {
+      display: flex;
+      height: 8px;
+      background: var(--surface);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .client-bar-segment {
+      height: 100%;
+      transition: width 0.3s;
+    }
+    .client-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 10px;
+    }
+    .client-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .client-legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+    }
+
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+    }
+    .metric-row:last-child { border-bottom: none; }
+    .metric-label { color: var(--dim); }
+    .metric-value { font-weight: 700; }
 
     /* Stats */
     .stats-grid {
@@ -277,31 +389,38 @@
       color: var(--accent);
     }
 
-    /* Table */
-    .queries-table {
+    /* Query Log Cards */
+    .query-log {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .query-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      overflow-x: auto;
+      cursor: pointer;
+      transition: border-color 0.15s;
     }
-    table { width: 100%; border-collapse: collapse; }
-    th {
-      text-align: left;
-      padding: 16px;
-      font-size: 10px;
-      font-weight: 400;
-      color: var(--dim);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      border-bottom: 1px solid var(--border);
-      background: rgba(255,255,255,0.02);
+    .query-card:hover {
+      border-color: var(--accent-dim);
     }
-    td {
+    .query-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       padding: 16px;
-      font-size: 12px;
       border-bottom: 1px solid var(--border);
     }
-    tr:last-child td { border-bottom: none; }
-    tr:hover { background: rgba(255,255,255,0.02); }
+    .query-card-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .query-card-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
     .type-badge {
       display: inline-block;
       padding: 4px 8px;
@@ -316,26 +435,40 @@
     .type-badge.validators { border-color: #ec4899; color: #ec4899; }
     .type-badge.mev { border-color: #f97316; color: #f97316; }
     .type-badge.slot_analysis { border-color: #06b6d4; color: #06b6d4; }
-    .address { color: var(--dim); }
+    .timestamp { color: var(--dim); font-size: 11px; }
+    .address { color: var(--dim); font-size: 11px; }
     .address a { color: var(--accent); text-decoration: none; }
     .address a:hover { text-decoration: underline; }
-    .amount { color: var(--accent); font-weight: 700; }
-    .timestamp { color: var(--dim); }
-    .response-preview {
-      max-width: 280px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      color: var(--dim);
-      font-size: 11px;
-      cursor: pointer;
+    .amount { color: var(--accent); font-weight: 700; font-size: 12px; }
+    
+    .query-card-body {
+      padding: 16px;
+      display: none;
     }
-    .response-preview:hover { color: var(--text); }
+    .query-card.expanded .query-card-body {
+      display: block;
+    }
+    .query-card-preview {
+      padding: 16px;
+      font-size: 11px;
+      color: var(--dim);
+      border-top: none;
+    }
+    .query-card.expanded .query-card-preview {
+      display: none;
+    }
+    .expand-hint {
+      font-size: 10px;
+      color: var(--muted);
+    }
+
     .empty, .loading {
       text-align: center;
       padding: 48px;
       color: var(--dim);
       font-size: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
     }
 
     /* Footer */
@@ -357,8 +490,9 @@
       .query-form { grid-template-columns: 1fr; }
       .stats-grid { grid-template-columns: repeat(2, 1fr); }
       .filters { flex-wrap: wrap; }
-      th, td { padding: 12px 8px; }
-      .response-preview { max-width: 120px; }
+      .data-grid { grid-template-columns: 1fr; }
+      .query-card-header { flex-direction: column; gap: 12px; align-items: flex-start; }
+      .query-card-right { width: 100%; justify-content: space-between; }
     }
   </style>
 </head>
@@ -415,8 +549,14 @@
       </div>
 
       <div class="result-box" id="result-box">
-        <div class="result-label">Response</div>
-        <pre id="result-content"></pre>
+        <div class="result-header">
+          <span class="result-label">Response</span>
+          <button class="result-toggle" onclick="toggleRawView()">View Raw</button>
+        </div>
+        <div class="result-content">
+          <div class="response-formatted" id="response-formatted"></div>
+          <pre class="result-raw" id="result-raw"></pre>
+        </div>
       </div>
     </div>
 
@@ -451,21 +591,8 @@
       </div>
     </div>
 
-    <div class="queries-table">
-      <table>
-        <thead>
-          <tr>
-            <th>Time</th>
-            <th>Type</th>
-            <th>Client</th>
-            <th>Amount</th>
-            <th>Response</th>
-          </tr>
-        </thead>
-        <tbody id="queries-body">
-          <tr><td colspan="5" class="loading">Loading...</td></tr>
-        </tbody>
-      </table>
+    <div class="query-log" id="query-log">
+      <div class="loading">Loading...</div>
     </div>
 
     <footer>
@@ -481,10 +608,240 @@
     const BASE_CHAIN_ID = 8453;
     const PAYMENT_AMOUNT = '10000';
 
+    const CLIENT_COLORS = {
+      prysm: '#00d4aa',
+      lighthouse: '#9b59b6',
+      teku: '#3498db',
+      nimbus: '#f39c12',
+      lodestar: '#e74c3c',
+      grandine: '#1abc9c'
+    };
+
     let provider = null;
     let signer = null;
     let userAddress = null;
     let currentType = '';
+    let showRaw = false;
+
+    // Response formatters for each query type
+    const formatters = {
+      network: (data) => {
+        const prop = data.propagation || {};
+        const clients = data.clients || data.clientDistribution || [];
+        
+        let clientsArray = Array.isArray(clients) ? clients : 
+          Object.entries(clients).map(([name, count]) => ({ name, nodeCount: count }));
+        
+        const totalNodes = clientsArray.reduce((sum, c) => sum + (c.nodeCount || c.count || 0), 0);
+        
+        return `
+          <div class="data-section">
+            <div class="data-section-title">Block Propagation (${data.period || '1h'})</div>
+            <div class="data-grid">
+              <div class="data-card">
+                <div class="card-label">Slots Observed</div>
+                <div class="card-value">${prop.slotsObserved || data.blocks?.observed || '-'}</div>
+              </div>
+              <div class="data-card">
+                <div class="card-label">Avg Propagation</div>
+                <div class="card-value accent">${formatMs(prop.average_ms || data.blocks?.avgPropagation_ms)}</div>
+              </div>
+              <div class="data-card">
+                <div class="card-label">P50</div>
+                <div class="card-value">${formatMs(prop.p50_ms || data.blocks?.p50_ms)}</div>
+              </div>
+              <div class="data-card">
+                <div class="card-label">P95</div>
+                <div class="card-value ${(prop.p95_ms || 0) > 4000 ? 'warning' : ''}">${formatMs(prop.p95_ms || data.blocks?.p95_ms)}</div>
+              </div>
+            </div>
+          </div>
+          ${clientsArray.length ? `
+          <div class="data-section">
+            <div class="data-section-title">Client Distribution (${totalNodes} nodes)</div>
+            <div class="client-bar">
+              ${clientsArray.map(c => {
+                const pct = ((c.nodeCount || c.count || 0) / totalNodes * 100);
+                const color = CLIENT_COLORS[c.name?.toLowerCase()] || '#666';
+                return `<div class="client-bar-segment" style="width: ${pct}%; background: ${color}"></div>`;
+              }).join('')}
+            </div>
+            <div class="client-legend">
+              ${clientsArray.map(c => {
+                const color = CLIENT_COLORS[c.name?.toLowerCase()] || '#666';
+                const pct = ((c.nodeCount || c.count || 0) / totalNodes * 100).toFixed(1);
+                return `<div class="client-legend-item">
+                  <div class="client-legend-dot" style="background: ${color}"></div>
+                  <span>${c.name} ${pct}%</span>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>` : ''}
+        `;
+      },
+      
+      gas: (data) => {
+        return `
+          <div class="data-section">
+            <div class="data-section-title">Gas Analysis</div>
+            <div class="data-grid">
+              <div class="data-card">
+                <div class="card-label">Base Fee (avg)</div>
+                <div class="card-value accent">${data.baseFee?.avg ? (data.baseFee.avg / 1e9).toFixed(2) + ' gwei' : '-'}</div>
+              </div>
+              <div class="data-card">
+                <div class="card-label">Base Fee (p50)</div>
+                <div class="card-value">${data.baseFee?.p50 ? (data.baseFee.p50 / 1e9).toFixed(2) + ' gwei' : '-'}</div>
+              </div>
+              <div class="data-card">
+                <div class="card-label">Utilization</div>
+                <div class="card-value">${data.utilization ? (data.utilization * 100).toFixed(1) + '%' : '-'}</div>
+              </div>
+              <div class="data-card">
+                <div class="card-label">Blocks</div>
+                <div class="card-value">${data.blocksAnalyzed || '-'}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+      
+      block: (data) => {
+        return `
+          <div class="data-section">
+            <div class="data-section-title">Latest Block</div>
+            <div class="data-grid">
+              <div class="data-card">
+                <div class="card-label">Slot</div>
+                <div class="card-value accent">${data.slot?.toLocaleString() || '-'}</div>
+              </div>
+              <div class="data-card">
+                <div class="card-label">Block Number</div>
+                <div class="card-value">${data.blockNumber?.toLocaleString() || '-'}</div>
+              </div>
+              <div class="data-card">
+                <div class="card-label">Proposer</div>
+                <div class="card-value">${data.proposerIndex || '-'}</div>
+              </div>
+              <div class="data-card">
+                <div class="card-label">Propagation</div>
+                <div class="card-value">${formatMs(data.propagation_ms)}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+      
+      validators: (data) => {
+        return `
+          <div class="data-section">
+            <div class="data-section-title">Validator Performance</div>
+            <div class="data-grid">
+              <div class="data-card">
+                <div class="card-label">Attestations Analyzed</div>
+                <div class="card-value">${data.attestationsAnalyzed?.toLocaleString() || '-'}</div>
+              </div>
+              <div class="data-card">
+                <div class="card-label">Head Vote Accuracy</div>
+                <div class="card-value accent">${data.headVoteAccuracy ? (data.headVoteAccuracy * 100).toFixed(2) + '%' : '-'}</div>
+              </div>
+              <div class="data-card">
+                <div class="card-label">Target Vote Accuracy</div>
+                <div class="card-value">${data.targetVoteAccuracy ? (data.targetVoteAccuracy * 100).toFixed(2) + '%' : '-'}</div>
+              </div>
+              <div class="data-card">
+                <div class="card-label">Avg Inclusion Distance</div>
+                <div class="card-value">${data.avgInclusionDistance?.toFixed(2) || '-'} slots</div>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+      
+      mev: (data) => {
+        const builders = data.builders || [];
+        return `
+          <div class="data-section">
+            <div class="data-section-title">MEV / Builder Stats</div>
+            ${builders.length ? `
+            <div class="data-grid">
+              ${builders.slice(0, 6).map(b => `
+                <div class="data-card">
+                  <div class="card-label">${b.name || b.builder || 'Unknown'}</div>
+                  <div class="card-value">${b.blocks || b.count || 0}</div>
+                  <div class="card-sub">${b.percentage ? b.percentage.toFixed(1) + '% of blocks' : ''}</div>
+                </div>
+              `).join('')}
+            </div>
+            ` : '<div style="color: var(--dim); font-size: 12px;">No builder data available</div>'}
+          </div>
+        `;
+      },
+      
+      slot_analysis: (data) => {
+        return `
+          <div class="data-section">
+            <div class="data-section-title">Slot ${data.slot?.toLocaleString() || '-'} Analysis</div>
+            <div class="data-grid">
+              <div class="data-card">
+                <div class="card-label">Block Arrivals</div>
+                <div class="card-value">${data.blockArrivals || '-'}</div>
+              </div>
+              <div class="data-card">
+                <div class="card-label">Attestations</div>
+                <div class="card-value accent">${data.attestations?.toLocaleString() || '-'}</div>
+              </div>
+              <div class="data-card">
+                <div class="card-label">Blob Sidecars</div>
+                <div class="card-value">${data.blobSidecars || '-'}</div>
+              </div>
+              <div class="data-card">
+                <div class="card-label">First Seen</div>
+                <div class="card-value">${formatMs(data.firstSeen_ms)}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    };
+
+    function formatMs(ms) {
+      if (ms === undefined || ms === null) return '-';
+      if (ms < 1000) return ms.toFixed(0) + 'ms';
+      return (ms / 1000).toFixed(2) + 's';
+    }
+
+    function formatResponse(type, data) {
+      if (data.error) {
+        return `<div style="color: var(--red); font-size: 12px;">Error: ${data.error}</div>`;
+      }
+      const formatter = formatters[type];
+      if (formatter) {
+        try {
+          return formatter(data);
+        } catch (e) {
+          console.error('Format error:', e);
+        }
+      }
+      return `<pre style="font-size: 11px; color: var(--dim);">${JSON.stringify(data, null, 2)}</pre>`;
+    }
+
+    function toggleRawView() {
+      showRaw = !showRaw;
+      const formatted = document.getElementById('response-formatted');
+      const raw = document.getElementById('result-raw');
+      const toggle = document.querySelector('.result-toggle');
+      
+      if (showRaw) {
+        formatted.classList.add('hidden');
+        raw.classList.add('visible');
+        toggle.textContent = 'View Formatted';
+      } else {
+        formatted.classList.remove('hidden');
+        raw.classList.remove('visible');
+        toggle.textContent = 'View Raw';
+      }
+    }
 
     async function connectWallet() {
       if (!window.ethereum) {
@@ -594,19 +951,21 @@
     async function askReldo() {
       const askBtn = document.getElementById('ask-btn');
       const resultBox = document.getElementById('result-box');
-      const resultContent = document.getElementById('result-content');
+      const formatted = document.getElementById('response-formatted');
+      const raw = document.getElementById('result-raw');
       const queryType = document.getElementById('query-type').value;
 
       askBtn.disabled = true;
       askBtn.textContent = 'Signing...';
       resultBox.className = 'result-box visible';
-      resultContent.textContent = 'Waiting for signature...';
+      formatted.innerHTML = '<div style="color: var(--dim);">Waiting for signature...</div>';
+      raw.textContent = '';
 
       try {
         const { signature, authorization } = await signPaymentAuthorization();
         
         askBtn.textContent = 'Querying...';
-        resultContent.textContent = 'Payment signed. Querying...';
+        formatted.innerHTML = '<div style="color: var(--dim);">Payment signed. Querying...</div>';
 
         const paymentPayload = {
           x402Version: 1,
@@ -634,16 +993,19 @@
 
         if (data.success) {
           resultBox.classList.add('success');
-          resultContent.textContent = JSON.stringify(data.result, null, 2);
+          formatted.innerHTML = formatResponse(queryType, data.result);
+          raw.textContent = JSON.stringify(data.result, null, 2);
           loadStats();
           loadQueries(currentType);
         } else {
           resultBox.classList.add('error');
-          resultContent.textContent = JSON.stringify(data, null, 2);
+          formatted.innerHTML = `<div style="color: var(--red);">${data.error || 'Query failed'}</div>`;
+          raw.textContent = JSON.stringify(data, null, 2);
         }
       } catch (e) {
         resultBox.classList.add('error');
-        resultContent.textContent = 'Error: ' + (e.message || e);
+        formatted.innerHTML = `<div style="color: var(--red);">Error: ${e.message || e}</div>`;
+        raw.textContent = e.message || String(e);
       } finally {
         askBtn.disabled = false;
         askBtn.textContent = 'Execute';
@@ -686,8 +1048,8 @@
       const now = new Date();
       const diff = now - date;
       if (diff < 60000) return 'now';
-      if (diff < 3600000) return Math.floor(diff / 60000) + 'm';
-      if (diff < 86400000) return Math.floor(diff / 3600000) + 'h';
+      if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+      if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
       return date.toLocaleDateString();
     }
 
@@ -709,8 +1071,8 @@
     }
 
     async function loadQueries(type = '') {
-      const tbody = document.getElementById('queries-body');
-      tbody.innerHTML = '<tr><td colspan="5" class="loading">Loading...</td></tr>';
+      const container = document.getElementById('query-log');
+      container.innerHTML = '<div class="loading">Loading...</div>';
 
       try {
         const url = type ? `${API_BASE}/v1/logs?type=${type}&limit=50` : `${API_BASE}/v1/logs?limit=50`;
@@ -718,26 +1080,64 @@
         const data = await res.json();
 
         if (!data.success || !data.logs.length) {
-          tbody.innerHTML = '<tr><td colspan="5" class="empty">No queries yet</td></tr>';
+          container.innerHTML = '<div class="empty">No queries yet</div>';
           return;
         }
 
-        tbody.innerHTML = data.logs.map(q => {
-          let preview = q.response_summary?.slice(0, 60) + '...' || '-';
+        container.innerHTML = data.logs.map((q, idx) => {
+          let responseData = {};
+          try {
+            responseData = JSON.parse(q.response_summary || '{}');
+          } catch (e) {}
+          
+          const previewText = getPreviewText(q.query_type, responseData);
+          
           return `
-          <tr>
-            <td class="timestamp">${formatTime(q.timestamp)}</td>
-            <td><span class="type-badge ${q.query_type}">${q.query_type}</span></td>
-            <td class="address">
-              ${q.client_address ? `<a href="https://basescan.org/address/${q.client_address}" target="_blank">${truncateAddress(q.client_address)}</a>` : '-'}
-            </td>
-            <td class="amount">${q.amount_usdc ? '$' + parseFloat(q.amount_usdc).toFixed(2) : '-'}</td>
-            <td class="response-preview" title="${(q.response_summary || '').replace(/"/g, '&quot;')}">${preview}</td>
-          </tr>
+          <div class="query-card" data-idx="${idx}" onclick="toggleCard(this)">
+            <div class="query-card-header">
+              <div class="query-card-meta">
+                <span class="type-badge ${q.query_type}">${q.query_type}</span>
+                <span class="timestamp">${formatTime(q.timestamp)}</span>
+              </div>
+              <div class="query-card-right">
+                <span class="address">
+                  ${q.client_address ? `<a href="https://basescan.org/address/${q.client_address}" target="_blank" onclick="event.stopPropagation()">${truncateAddress(q.client_address)}</a>` : '-'}
+                </span>
+                <span class="amount">${q.amount_usdc ? '$' + parseFloat(q.amount_usdc).toFixed(2) : '-'}</span>
+              </div>
+            </div>
+            <div class="query-card-preview">${previewText} <span class="expand-hint">· click to expand</span></div>
+            <div class="query-card-body">${formatResponse(q.query_type, responseData)}</div>
+          </div>
         `}).join('');
       } catch (e) {
-        tbody.innerHTML = '<tr><td colspan="5" class="empty">Failed to load</td></tr>';
+        container.innerHTML = '<div class="empty">Failed to load</div>';
       }
+    }
+
+    function getPreviewText(type, data) {
+      if (data.error) return 'Error response';
+      switch(type) {
+        case 'network':
+          const prop = data.propagation || data.blocks || {};
+          return `Avg propagation: ${formatMs(prop.average_ms || prop.avgPropagation_ms)}`;
+        case 'gas':
+          return data.baseFee?.avg ? `Avg base fee: ${(data.baseFee.avg / 1e9).toFixed(2)} gwei` : 'Gas analysis';
+        case 'block':
+          return data.slot ? `Slot ${data.slot.toLocaleString()}` : 'Latest block';
+        case 'validators':
+          return data.headVoteAccuracy ? `Head accuracy: ${(data.headVoteAccuracy * 100).toFixed(1)}%` : 'Validator stats';
+        case 'mev':
+          return data.builders?.length ? `${data.builders.length} builders analyzed` : 'Builder stats';
+        case 'slot_analysis':
+          return data.slot ? `Slot ${data.slot.toLocaleString()} analysis` : 'Slot analysis';
+        default:
+          return 'Query response';
+      }
+    }
+
+    function toggleCard(card) {
+      card.classList.toggle('expanded');
     }
 
     document.querySelectorAll('.filter-btn').forEach(btn => {
