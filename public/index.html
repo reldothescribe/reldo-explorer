@@ -244,6 +244,10 @@
       white-space: nowrap;
       color: var(--muted);
       font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .response-preview:hover {
+      color: var(--accent);
     }
     .loading { text-align: center; padding: 3rem; color: var(--muted); }
     .empty { text-align: center; padding: 3rem; color: var(--muted); }
@@ -255,7 +259,7 @@
       .form-group { width: 100%; }
       table { font-size: 0.8rem; }
       th, td { padding: 0.75rem 0.5rem; }
-      .response-preview { display: none; }
+      .response-preview { max-width: 150px; }
     }
   </style>
 </head>
@@ -588,7 +592,26 @@
           return;
         }
 
-        tbody.innerHTML = data.logs.map(q => `
+        tbody.innerHTML = data.logs.map(q => {
+          // Format response nicely
+          let responseDisplay = '-';
+          if (q.response_summary) {
+            try {
+              const parsed = JSON.parse(q.response_summary);
+              if (parsed.gasPrice) {
+                responseDisplay = `Gas: ${parsed.gasPrice.formatted}`;
+              } else if (parsed.blockNumber) {
+                responseDisplay = `Block #${parsed.blockNumber}`;
+              } else if (parsed.network) {
+                responseDisplay = parsed.network;
+              } else {
+                responseDisplay = q.response_summary.slice(0, 50) + '...';
+              }
+            } catch {
+              responseDisplay = q.response_summary.slice(0, 50) + '...';
+            }
+          }
+          return `
           <tr>
             <td class="timestamp">${formatTime(q.timestamp)}</td>
             <td><span class="type-badge ${q.query_type}">${q.query_type}</span></td>
@@ -596,9 +619,9 @@
               ${q.client_address ? `<a href="https://basescan.org/address/${q.client_address}" target="_blank">${truncateAddress(q.client_address)}</a>` : '-'}
             </td>
             <td class="amount">${q.amount_usdc ? '$' + parseFloat(q.amount_usdc).toFixed(2) : '-'}</td>
-            <td class="response-preview">${q.response_summary || '-'}</td>
+            <td class="response-preview" title="${(q.response_summary || '').replace(/"/g, '&quot;')}" onclick="alert('${(q.response_summary || '-').replace(/'/g, "\\'").replace(/\n/g, ' ')}')">${responseDisplay}</td>
           </tr>
-        `).join('');
+        `}).join('');
       } catch (e) {
         tbody.innerHTML = '<tr><td colspan="5" class="empty">Failed to load queries</td></tr>';
       }
