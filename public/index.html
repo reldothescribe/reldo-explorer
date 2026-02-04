@@ -329,6 +329,10 @@
     }
     .type-pill.slot_analysis { border-color: var(--cyan); color: var(--cyan); }
     .type-pill.reorg_analysis { border-color: var(--orange); color: var(--orange); }
+    .type-pill.validator_performance { border-color: var(--purple); color: var(--purple); }
+    .type-pill.network_health { border-color: var(--accent); color: var(--accent); }
+    .type-pill.client_diversity { border-color: var(--pink); color: var(--pink); }
+    .type-pill.engine_timing { border-color: var(--yellow); color: var(--yellow); }
     .timestamp { font-size: 10px; color: var(--muted); }
     .address-link { font-size: 10px; color: var(--dim); text-decoration: none; }
     .address-link:hover { color: var(--accent); }
@@ -403,6 +407,10 @@
       <select id="query-type" onchange="toggleQueryInput()">
         <option value="slot_analysis">Slot Analysis</option>
         <option value="reorg_analysis">Reorg Analysis</option>
+        <option value="validator_performance">Validator Performance</option>
+        <option value="network_health">Network Health</option>
+        <option value="client_diversity">Client Diversity</option>
+        <option value="engine_timing">Engine Timing</option>
       </select>
       <input type="text" id="query-input" class="slot-input visible" placeholder="Slot #">
       <div class="price">$0.01</div>
@@ -440,6 +448,10 @@
       <button class="tab active" data-type="">All</button>
       <button class="tab" data-type="slot_analysis">Slot</button>
       <button class="tab" data-type="reorg_analysis">Reorg</button>
+      <button class="tab" data-type="validator_performance">Validator</button>
+      <button class="tab" data-type="network_health">Network</button>
+      <button class="tab" data-type="client_diversity">Clients</button>
+      <button class="tab" data-type="engine_timing">Engine</button>
     </div>
 
     <div class="query-list" id="query-list"><div class="empty">Loading...</div></div>
@@ -521,23 +533,231 @@
           <div class="section-title">Reorg Analysis · Slot ${d.slot?.toLocaleString() || '?'}</div>
           <div class="metric-grid">
             <div class="metric"><div class="label">Slot</div><div class="value accent">${d.slot?.toLocaleString() || '-'}</div></div>
-            <div class="metric"><div class="label">Depth</div><div class="value warning">${d.depth || '-'}</div></div>
-            <div class="metric"><div class="label">Orphaned Blocks</div><div class="value">${d.orphanedBlocks || '-'}</div></div>
-            <div class="metric"><div class="label">Duration</div><div class="value">${fmtMs(d.duration_ms)}</div></div>
+            <div class="metric"><div class="label">Status</div><div class="value ${d.status === 'missed' ? 'warning' : 'accent'}">${d.status || 'proposed'}</div></div>
+            <div class="metric"><div class="label">Epoch</div><div class="value">${d.epoch || '-'}</div></div>
           </div>
         </div>
-        ${d.blocks?.length ? `<div class="section">
-          <div class="section-title">Affected Blocks</div>
-          <div class="geo-grid">
-            ${d.blocks.map(b => `<div class="geo-item">
-              <span class="country">Slot ${b.slot}</span>
-              <span class="data"><span class="nodes">${b.status || 'orphaned'}</span></span>
-            </div>`).join('')}
+        ${d.block_timing ? `<div class="section">
+          <div class="section-title">Block Timing</div>
+          <div class="metric-grid">
+            <div class="metric"><div class="label">First Seen</div><div class="value accent">${fmtMs(d.block_timing.first_seen_ms)}</div></div>
+            <div class="metric"><div class="label">P50 Latency</div><div class="value">${fmtMs(d.block_timing.p50_ms)}</div></div>
+            <div class="metric"><div class="label">Deadline Missed</div><div class="value ${d.block_timing.missed_attestation_deadline ? 'warning' : 'accent'}">${d.block_timing.missed_attestation_deadline ? 'Yes' : 'No'}</div></div>
           </div>
+          ${d.block_timing.verdict ? `<div class="insight ${d.block_timing.missed_attestation_deadline ? 'warning' : ''}">${d.block_timing.verdict}</div>` : ''}
         </div>` : ''}
-        ${d.cause ? `<div class="insight">${d.cause}</div>` : ''}
-        ${d.analysis ? `<div class="insight">${d.analysis}</div>` : ''}
-      `
+        ${d.verdict?.likely_reasons?.length ? `<div class="section">
+          <div class="section-title">Verdict · ${d.verdict.confidence} confidence</div>
+          ${d.verdict.likely_reasons.map(r => `<div class="insight ${r.includes('LATE') || r.includes('RISKY') ? 'warning' : ''}">${r}</div>`).join('')}
+        </div>` : ''}
+      `,
+
+      validator_performance: (d) => {
+        const att = d.attestations_24h || {};
+        const props = d.block_proposals_30d || {};
+        const mev = d.mev_rewards || {};
+        const comp = d.network_comparison || {};
+        const summary = d.summary || {};
+        
+        return `
+          <div class="section">
+            <div class="section-title">Validator ${d.validator_index} · ${d.network || 'mainnet'}</div>
+            <div class="metric-grid">
+              <div class="metric"><div class="label">Index</div><div class="value accent">${d.validator_index}</div></div>
+              <div class="metric"><div class="label">Grade</div><div class="value ${att.overall_grade === 'A' ? 'accent' : att.overall_grade === 'B' ? '' : 'warning'}">${att.overall_grade || '-'}</div></div>
+              <div class="metric"><div class="label">Status</div><div class="value ${att.status === 'excellent' ? 'accent' : att.status === 'good' ? '' : 'warning'}">${att.status || '-'}</div></div>
+            </div>
+            <div style="margin-top:8px;font-size:11px;color:var(--muted)">
+              <a href="https://beaconcha.in/validator/${d.validator_index}" target="_blank" style="color:var(--dim)">View on beaconcha.in →</a>
+            </div>
+          </div>
+          ${att.total ? `<div class="section">
+            <div class="section-title">Attestations (24h)</div>
+            <div class="metric-grid">
+              <div class="metric"><div class="label">Total</div><div class="value accent">${att.total?.toLocaleString() || '-'}</div></div>
+              <div class="metric"><div class="label">Head Accuracy</div><div class="value ${att.head_accuracy_pct >= 99 ? 'accent' : att.head_accuracy_pct >= 95 ? '' : 'warning'}">${att.head_accuracy_pct?.toFixed(1) || '-'}%</div></div>
+              <div class="metric"><div class="label">Target Accuracy</div><div class="value">${att.target_accuracy_pct?.toFixed(1) || '-'}%</div></div>
+              <div class="metric"><div class="label">Avg Inclusion</div><div class="value">${att.avg_inclusion_distance?.toFixed(2) || '-'} slots</div></div>
+            </div>
+            <div style="margin-top:8px;font-size:10px;color:var(--muted)">Slots ${att.slots_range || ''}</div>
+          </div>` : ''}
+          ${comp.validator_24h_accuracy ? `<div class="section">
+            <div class="section-title">Network Comparison</div>
+            <div class="metric-grid">
+              <div class="metric"><div class="label">Your Accuracy</div><div class="value accent">${comp.validator_24h_accuracy?.toFixed(1) || '-'}%</div></div>
+              <div class="metric"><div class="label">Network Avg</div><div class="value">${comp.network_avg_24h_accuracy?.toFixed(1) || '-'}%</div></div>
+              <div class="metric"><div class="label">Difference</div><div class="value ${comp.difference > 0 ? 'accent' : comp.difference < -0.5 ? 'warning' : ''}">${comp.difference > 0 ? '+' : ''}${comp.difference?.toFixed(1) || '-'}%</div></div>
+              <div class="metric"><div class="label">Percentile</div><div class="value">${comp.percentile_estimate || '-'}</div></div>
+            </div>
+          </div>` : ''}
+          ${props.count !== undefined ? `<div class="section">
+            <div class="section-title">Block Proposals (30d)</div>
+            <div class="metric-grid">
+              <div class="metric"><div class="label">Blocks</div><div class="value accent">${props.count}</div></div>
+              <div class="metric"><div class="label">Luck Factor</div><div class="value ${props.luck_factor > 1 ? 'accent' : ''}">${props.luck_factor?.toFixed(2) || '-'}</div></div>
+              <div class="metric"><div class="label">Gas Used</div><div class="value">${props.total_gas_used?.toLocaleString() || '-'}</div></div>
+              <div class="metric"><div class="label">Avg Gas/Block</div><div class="value">${props.avg_gas_per_block?.toLocaleString() || '-'}</div></div>
+            </div>
+          </div>` : ''}
+          ${mev.total_eth !== undefined ? `<div class="section">
+            <div class="section-title">MEV Rewards</div>
+            <div class="metric-grid">
+              <div class="metric"><div class="label">Blocks</div><div class="value accent">${mev.blocks}</div></div>
+              <div class="metric"><div class="label">Total ETH</div><div class="value accent">${mev.total_eth?.toFixed(6) || '-'}</div></div>
+              <div class="metric"><div class="label">Total USD</div><div class="value">$${mev.total_usd_approx?.toFixed(2) || '-'}</div></div>
+              <div class="metric"><div class="label">Max Single</div><div class="value">${mev.max_single_block_eth?.toFixed(6) || '-'}</div></div>
+            </div>
+          </div>` : ''}
+          ${summary.issues?.length || summary.commendations?.length ? `<div class="section">
+            <div class="section-title">Summary · ${summary.overall_health || 'healthy'}</div>
+            ${summary.commendations?.map(c => `<div class="insight">${c}</div>`).join('') || ''}
+            ${summary.issues?.map(i => `<div class="insight warning">${i}</div>`).join('') || ''}
+          </div>` : ''}
+        `;
+      },
+
+      network_health: (d) => {
+        const prop = d.propagation || {};
+        const clients = d.clients || [];
+        const geo = d.geography || [];
+        const late = d.lateBlocks || {};
+        
+        return `
+          <div class="section">
+            <div class="section-title">Network Health · ${d.period || '1h'} · ${d.network || 'mainnet'}</div>
+            <div class="metric-grid">
+              <div class="metric"><div class="label">Slots Observed</div><div class="value accent">${prop.slotsObserved?.toLocaleString() || '-'}</div></div>
+              <div class="metric"><div class="label">Avg Propagation</div><div class="value ${prop.average_ms < 1000 ? 'accent' : prop.average_ms < 2000 ? '' : 'warning'}">${fmtMs(prop.average_ms)}</div></div>
+              <div class="metric"><div class="label">P95 Latency</div><div class="value">${fmtMs(prop.p95_ms)}</div></div>
+              <div class="metric"><div class="label">P99 Latency</div><div class="value ${prop.p99_ms > 5000 ? 'warning' : ''}">${fmtMs(prop.p99_ms)}</div></div>
+            </div>
+          </div>
+          ${clients.length ? `<div class="section">
+            <div class="section-title">Client Performance</div>
+            <div class="bar-chart">
+              ${clients.slice(0, 6).map(c => {
+                const maxNodes = Math.max(...clients.map(x => x.nodes));
+                const pct = (c.nodes / maxNodes * 100).toFixed(0);
+                const color = COLORS[c.name?.toLowerCase()] || '#888';
+                return `<div class="bar-row">
+                  <span class="bar-label">${c.name}</span>
+                  <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}">${c.nodes}</div></div>
+                  <span class="bar-value">${c.avg_ms}ms avg</span>
+                </div>`;
+              }).join('')}
+            </div>
+            ${d.clientInsight ? `<div class="insight">${d.clientInsight}</div>` : ''}
+          </div>` : ''}
+          ${geo.length ? `<div class="section">
+            <div class="section-title">Geographic Distribution</div>
+            <div class="geo-grid">
+              ${geo.slice(0, 10).map(g => `<div class="geo-item">
+                <span class="country">${g.country}</span>
+                <span class="data"><span class="nodes">${g.nodes}</span><span class="latency">${Math.round(g.avg_ms)}ms</span></span>
+              </div>`).join('')}
+            </div>
+          </div>` : ''}
+          ${late.count ? `<div class="section">
+            <div class="metric-grid">
+              <div class="metric"><div class="label">Late Blocks (>4s)</div><div class="value ${late.percentage > 5 ? 'warning' : 'accent'}">${late.count} (${late.percentage}%)</div></div>
+            </div>
+            ${late.percentage > 5 ? `<div class="insight warning">High late block rate: ${late.percentage}% of blocks arrived >4s after slot start</div>` : ''}
+          </div>` : ''}
+          ${d.alert ? `<div class="insight warning">${d.alert}</div>` : ''}
+        `;
+      },
+
+      client_diversity: (d) => {
+        const cl = d.consensus_layer || {};
+        const el = d.execution_layer || {};
+        const pairs = d.client_pairs || {};
+        
+        return `
+          <div class="section">
+            <div class="section-title">Client Diversity · ${d.period || '24h'} · ${d.network || 'mainnet'}</div>
+          </div>
+          ${cl.clients?.length ? `<div class="section">
+            <div class="section-title">Consensus Layer · ${cl.total_nodes?.toLocaleString()} nodes · HHI: ${cl.hhi} (${cl.concentration})</div>
+            <div class="bar-chart">
+              ${cl.clients.slice(0, 6).map(c => {
+                const maxNodes = Math.max(...cl.clients.map(x => x.nodes));
+                const pct = (c.nodes / maxNodes * 100).toFixed(0);
+                const color = COLORS[c.client?.toLowerCase()] || '#888';
+                return `<div class="bar-row">
+                  <span class="bar-label">${c.client}</span>
+                  <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}">${c.pct}%</div></div>
+                  <span class="bar-value">${c.nodes.toLocaleString()}</span>
+                </div>`;
+              }).join('')}
+            </div>
+            ${cl.warning ? `<div class="insight warning">${cl.warning}</div>` : cl.caution ? `<div class="insight">${cl.caution}</div>` : ''}
+          </div>` : ''}
+          ${el.clients?.length ? `<div class="section">
+            <div class="section-title">Execution Layer · ${el.total_nodes?.toLocaleString()} nodes · HHI: ${el.hhi} (${el.concentration})</div>
+            <div class="bar-chart">
+              ${el.clients.slice(0, 6).map(c => {
+                const maxNodes = Math.max(...el.clients.map(x => x.nodes));
+                const pct = (c.nodes / maxNodes * 100).toFixed(0);
+                return `<div class="bar-row">
+                  <span class="bar-label">${c.client}</span>
+                  <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:#666">${c.pct}%</div></div>
+                  <span class="bar-value">${c.nodes.toLocaleString()}</span>
+                </div>`;
+              }).join('')}
+            </div>
+            ${el.warning ? `<div class="insight warning">${el.warning}</div>` : el.caution ? `<div class="insight">${el.caution}</div>` : ''}
+          </div>` : ''}
+          ${pairs.top_combinations?.length ? `<div class="section">
+            <div class="section-title">Top Client Pairs</div>
+            <div class="geo-grid">
+              ${pairs.top_combinations.slice(0, 8).map(p => `<div class="geo-item">
+                <span class="country">${p.cl} + ${p.el}</span>
+                <span class="data"><span class="nodes">${p.pct}%</span></span>
+              </div>`).join('')}
+            </div>
+          </div>` : ''}
+        `;
+      },
+
+      engine_timing: (d) => {
+        const clients = d.clients || [];
+        const overall = d.overall || {};
+        
+        return `
+          <div class="section">
+            <div class="section-title">Engine API Timing · ${d.period || '24h'} · ${d.network || 'mainnet'}</div>
+            <div class="metric-grid">
+              <div class="metric"><div class="label">Slots Analyzed</div><div class="value accent">${overall.total_slots_analyzed?.toLocaleString() || '-'}</div></div>
+              <div class="metric"><div class="label">Network Avg</div><div class="value">${overall.network_avg_ms?.toFixed(1) || '-'}ms</div></div>
+              <div class="metric"><div class="label">Network P50</div><div class="value">${overall.network_p50_ms?.toFixed(1) || '-'}ms</div></div>
+              <div class="metric"><div class="label">Slow % (>500ms)</div><div class="value ${overall.network_slow_pct > 5 ? 'warning' : ''}">${overall.network_slow_pct?.toFixed(1) || '-'}%</div></div>
+            </div>
+          </div>
+          ${d.rankings ? `<div class="section">
+            <div class="section-title">Rankings</div>
+            <div class="metric-grid">
+              <div class="metric"><div class="label">Fastest</div><div class="value accent">${d.rankings.fastest_avg}</div></div>
+              <div class="metric"><div class="label">Slowest</div><div class="value">${d.rankings.slowest_avg}</div></div>
+              <div class="metric"><div class="label">Speed Ratio</div><div class="value ${d.rankings.speed_ratio > 2 ? 'warning' : ''}">${d.rankings.speed_ratio?.toFixed(1)}x</div></div>
+              <div class="metric"><div class="label">Most Reliable</div><div class="value accent">${d.rankings.most_reliable}</div></div>
+            </div>
+            ${d.insight ? `<div class="insight">${d.insight}</div>` : ''}
+          </div>` : ''}
+          ${clients.length ? `<div class="section">
+            <div class="section-title">By Execution Client</div>
+            <div class="metric-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+              ${clients.map(c => `<div class="metric" style="font-size:11px">
+                <div class="label">${c.client} · ${c.slots.toLocaleString()} slots</div>
+                <div class="value ${c.avg_ms < 300 ? 'accent' : c.avg_ms > 500 ? 'warning' : ''}">${c.avg_ms}ms avg</div>
+                <div class="sub">P95: ${c.p95_ms}ms · P99: ${c.p99_ms}ms · Slow: ${c.slow_pct_gt_500ms}%</div>
+              </div>`).join('')}
+            </div>
+          </div>` : ''}
+          ${d.methodology ? `<div style="margin-top:16px;font-size:9px;color:var(--muted)">
+            ${d.methodology.description} · Slow threshold: ${d.methodology.slow_threshold_ms}ms
+          </div>` : ''}
+        `;
+      }
     };
 
     function fmtMs(ms) {
@@ -562,8 +782,15 @@
     function toggleQueryInput() {
       const type = document.getElementById('query-type').value;
       const input = document.getElementById('query-input');
-      input.classList.add('visible');
-      input.placeholder = type === 'slot_analysis' ? 'Slot #' : 'Slot # (reorg start)';
+      const needsInput = ['slot_analysis', 'reorg_analysis', 'validator_performance'].includes(type);
+      input.classList.toggle('visible', needsInput);
+      if (needsInput) {
+        if (type === 'validator_performance') {
+          input.placeholder = 'Validator Index #';
+        } else {
+          input.placeholder = 'Slot #';
+        }
+      }
     }
 
     async function connect() {
